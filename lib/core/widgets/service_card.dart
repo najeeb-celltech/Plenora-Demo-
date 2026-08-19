@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../services/cart_service.dart';
 import '../theme/app_colors.dart';
 import '../theme/app_typography.dart';
 import 'primary_button.dart';
@@ -50,10 +51,29 @@ class ServiceCard extends StatelessWidget {
     );
   }
 
+  void _addToCart(BuildContext context) {
+    CartService.addService(
+      title: title,
+      description: description,
+      price: price,
+      rating: rating,
+      imageUrl: imageUrl,
+    );
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text("Added '$title' to Service Cart!"),
+        backgroundColor: AppColors.primary,
+        behavior: SnackBarBehavior.floating,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+        duration: const Duration(seconds: 2),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     if (isHorizontalCompact) {
-      // Popular services card with slightly scaled-up image inside exact 80x80 container box
+      // Popular services card with full multi-line title visibility & compact Add to Service button
       return Container(
         margin: const EdgeInsets.only(bottom: 12),
         padding: const EdgeInsets.all(12),
@@ -143,18 +163,18 @@ class ServiceCard extends StatelessWidget {
               ),
             ),
             const SizedBox(width: 8),
-            // Sleek & Compact Book Now Button (Height 26dp)
+            // Sleek & Slightly Larger Add to Service Button (Height 30dp, FittedBox scaled)
             Flexible(
               fit: FlexFit.loose,
               child: FittedBox(
                 fit: BoxFit.scaleDown,
                 child: PrimaryButton(
-                  text: 'Book Now',
-                  onPressed: onBookNow,
-                  height: 26,
-                  borderRadius: 13,
-                  padding: const EdgeInsets.symmetric(horizontal: 8),
-                  leadingIcon: Icons.calendar_today_rounded,
+                  text: 'Add to Service',
+                  onPressed: () => _addToCart(context),
+                  height: 30,
+                  borderRadius: 15,
+                  padding: const EdgeInsets.symmetric(horizontal: 10),
+                  leadingIcon: Icons.add_shopping_cart_rounded,
                 ),
               ),
             ),
@@ -261,7 +281,7 @@ class ServiceCard extends StatelessWidget {
             ],
           ),
           const SizedBox(height: 14),
-          // Action buttons row (Borderless)
+          // Action buttons row (View Details & Add to Service)
           Row(
             children: [
               if (onViewDetails != null)
@@ -296,15 +316,15 @@ class ServiceCard extends StatelessWidget {
                     ),
                   ),
                 ),
-              if (onViewDetails != null) const SizedBox(width: 10),
+              if (onViewDetails != null) const SizedBox(width: 8),
               Expanded(
                 child: PrimaryButton(
-                  text: 'Book Now',
-                  onPressed: onBookNow,
+                  text: 'Add to Service',
+                  onPressed: () => _addToCart(context),
                   height: 36,
                   borderRadius: 18,
-                  padding: const EdgeInsets.symmetric(horizontal: 12),
-                  leadingIcon: Icons.calendar_today_rounded,
+                  padding: const EdgeInsets.symmetric(horizontal: 10),
+                  leadingIcon: Icons.add_shopping_cart_rounded,
                 ),
               ),
             ],

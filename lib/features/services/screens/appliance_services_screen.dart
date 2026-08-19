@@ -4,52 +4,54 @@ import '../../../core/theme/app_typography.dart';
 import '../../../core/widgets/service_card.dart';
 import 'service_detail_sheet.dart';
 
-class CleaningServicesScreen extends StatefulWidget {
-  const CleaningServicesScreen({super.key});
+class ApplianceServicesScreen extends StatefulWidget {
+  const ApplianceServicesScreen({super.key});
 
   @override
-  State<CleaningServicesScreen> createState() => _CleaningServicesScreenState();
+  State<ApplianceServicesScreen> createState() => _ApplianceServicesScreenState();
 }
 
-class _CleaningServicesScreenState extends State<CleaningServicesScreen> {
+class _ApplianceServicesScreenState extends State<ApplianceServicesScreen> {
   int _selectedFilterIndex = 0;
 
-  final List<String> _filters = const ["All", "Top Rated", "Under \$30", "Nearby"];
+  final List<String> _filters = const ["All", "Top Rated", "Under \$30", "Same Day"];
 
   final List<Map<String, dynamic>> _professionals = const [
     {
-      "title": "Kitchen Sparkle Service",
+      "title": "Refrigerator & Freezer Repair",
       "description":
-          "Detailed grease and appliance cleaning, inside oven/fridge treatment, and counter shine.",
-      "price": "\$35/hr",
-      "rating": 4.8,
-      "imageUrl": "assets/image/kitchen-service.png",
-    },
-    {
-      "title": "Bathroom Cleaning",
-      "description":
-          "Tile gunk scrubbing, mirror shine, bathtub sanitization, and anti-bacterial disinfections.",
-      "price": "\$25/hr",
+          "Compressor diagnostics, coolant refill, defrosting issue fix, and seal checks.",
+      "price": "\$34/hr",
       "rating": 4.9,
-      "imageUrl": "assets/image/bathroom-service.png",
+      "imageUrl":
+          "https://images.unsplash.com/photo-1581092921461-eab62e97a780?q=80&w=400&auto=format&fit=crop",
     },
     {
-      "title": "Carpet Cleaning",
+      "title": "Washing Machine & Dryer Care",
       "description":
-          "Stain removal and full upholstery cleaning using hot water extraction techniques.",
+          "Drum belt replacement, drain pump unclogging, and vibration dampening.",
       "price": "\$29/hr",
+      "rating": 4.8,
+      "imageUrl":
+          "https://images.unsplash.com/photo-1610557892470-55d9e80c0bce?q=80&w=400&auto=format&fit=crop",
+    },
+    {
+      "title": "Oven & Stove Servicing",
+      "description":
+          "Igniter replacement, heating element calibration, and gas burner cleaning.",
+      "price": "\$26/hr",
+      "rating": 4.7,
+      "imageUrl":
+          "https://images.unsplash.com/photo-1556911220-e15b29be8c8f?q=80&w=400&auto=format&fit=crop",
+    },
+    {
+      "title": "Dishwasher Repair & Clean",
+      "description":
+          "Water pump repair, spray arm unclogging, and anti-leak gasket installation.",
+      "price": "\$30/hr",
       "rating": 4.9,
       "imageUrl":
           "https://images.unsplash.com/photo-1584622650111-993a426fbf0a?q=80&w=400&auto=format&fit=crop",
-    },
-    {
-      "title": "Full House Deep Sanitation",
-      "description":
-          "Whole home eco-friendly disinfection, floor scrubbing, window cleaning, and trash clearance.",
-      "price": "\$42/hr",
-      "rating": 5.0,
-      "imageUrl":
-          "https://images.unsplash.com/photo-1628177142898-93e36e4e3a50?q=80&w=400&auto=format&fit=crop",
     },
   ];
 
@@ -108,10 +110,10 @@ class _CleaningServicesScreenState extends State<CleaningServicesScreen> {
                   ),
                   // Title
                   Text(
-                    "Cleaning",
+                    "Appliance",
                     style: AppTypography.headlineMedium.copyWith(fontSize: 20),
                   ),
-                  // Symmetric Spacer Placeholder (Filter Icon Removed)
+                  // Symmetric Spacer Placeholder
                   const SizedBox(width: 44, height: 44),
                 ],
               ),
@@ -189,7 +191,7 @@ class _CleaningServicesScreenState extends State<CleaningServicesScreen> {
                 physics: const BouncingScrollPhysics(),
                 padding: const EdgeInsets.symmetric(horizontal: 20),
                 children: [
-                  // Section Header: Top Professionals (Sort Button Removed Completely)
+                  // Section Header: Top Professionals
                   Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
@@ -200,7 +202,7 @@ class _CleaningServicesScreenState extends State<CleaningServicesScreen> {
                       ),
                       const SizedBox(height: 2),
                       Text(
-                        "28 Verified pros available today",
+                        "24 Verified pros available today",
                         style: AppTypography.bodySmall.copyWith(
                           color: AppColors.textSecondary,
                         ),

@@ -81,41 +81,45 @@ class _PrimaryButtonState extends State<PrimaryButton> {
                     height: isSmall ? 16 : 22,
                     child: CircularProgressIndicator(
                       strokeWidth: 2.5,
-                      valueColor: AlwaysStoppedAnimation<Color>(widget.textColor),
+                      valueColor:
+                          AlwaysStoppedAnimation<Color>(widget.textColor),
                     ),
                   )
-                : Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      if (widget.leadingIcon != null) ...[
-                        Icon(
-                          widget.leadingIcon,
-                          size: isExtraSmall ? 12 : (isSmall ? 13.5 : 18),
-                          color: widget.textColor,
+                : FittedBox(
+                    fit: BoxFit.scaleDown,
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        if (widget.leadingIcon != null) ...[
+                          Icon(
+                            widget.leadingIcon,
+                            size: isExtraSmall ? 12 : (isSmall ? 13.5 : 18),
+                            color: widget.textColor,
+                          ),
+                          SizedBox(width: isSmall ? 4 : 8),
+                        ],
+                        Text(
+                          widget.text,
+                          style: AppTypography.buttonText.copyWith(
+                            color: widget.textColor,
+                            fontSize: isExtraSmall
+                                ? 11.5
+                                : (isSmall ? 12.5 : 15.5),
+                            fontWeight: FontWeight.w800,
+                            letterSpacing: 0.1,
+                          ),
                         ),
-                        SizedBox(width: isSmall ? 4 : 8),
+                        if (widget.trailingIcon != null) ...[
+                          SizedBox(width: isSmall ? 4 : 8),
+                          Icon(
+                            widget.trailingIcon,
+                            size: isExtraSmall ? 12 : (isSmall ? 13.5 : 18),
+                            color: widget.textColor,
+                          ),
+                        ],
                       ],
-                      Text(
-                        widget.text,
-                        style: AppTypography.buttonText.copyWith(
-                          color: widget.textColor,
-                          fontSize: isExtraSmall
-                              ? 11.5
-                              : (isSmall ? 12.5 : 15.5),
-                          fontWeight: FontWeight.w800,
-                          letterSpacing: 0.1,
-                        ),
-                      ),
-                      if (widget.trailingIcon != null) ...[
-                        SizedBox(width: isSmall ? 4 : 8),
-                        Icon(
-                          widget.trailingIcon,
-                          size: isExtraSmall ? 12 : (isSmall ? 13.5 : 18),
-                          color: widget.textColor,
-                        ),
-                      ],
-                    ],
+                    ),
                   ),
           ),
         ),

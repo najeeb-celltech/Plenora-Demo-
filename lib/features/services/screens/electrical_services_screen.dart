@@ -4,52 +4,54 @@ import '../../../core/theme/app_typography.dart';
 import '../../../core/widgets/service_card.dart';
 import 'service_detail_sheet.dart';
 
-class CleaningServicesScreen extends StatefulWidget {
-  const CleaningServicesScreen({super.key});
+class ElectricalServicesScreen extends StatefulWidget {
+  const ElectricalServicesScreen({super.key});
 
   @override
-  State<CleaningServicesScreen> createState() => _CleaningServicesScreenState();
+  State<ElectricalServicesScreen> createState() => _ElectricalServicesScreenState();
 }
 
-class _CleaningServicesScreenState extends State<CleaningServicesScreen> {
+class _ElectricalServicesScreenState extends State<ElectricalServicesScreen> {
   int _selectedFilterIndex = 0;
 
-  final List<String> _filters = const ["All", "Top Rated", "Under \$30", "Nearby"];
+  final List<String> _filters = const ["All", "Top Rated", "Under \$30", "Emergency"];
 
   final List<Map<String, dynamic>> _professionals = const [
     {
-      "title": "Kitchen Sparkle Service",
+      "title": "Wiring & Circuit Repair",
       "description":
-          "Detailed grease and appliance cleaning, inside oven/fridge treatment, and counter shine.",
-      "price": "\$35/hr",
-      "rating": 4.8,
-      "imageUrl": "assets/image/kitchen-service.png",
-    },
-    {
-      "title": "Bathroom Cleaning",
-      "description":
-          "Tile gunk scrubbing, mirror shine, bathtub sanitization, and anti-bacterial disinfections.",
-      "price": "\$25/hr",
-      "rating": 4.9,
-      "imageUrl": "assets/image/bathroom-service.png",
-    },
-    {
-      "title": "Carpet Cleaning",
-      "description":
-          "Stain removal and full upholstery cleaning using hot water extraction techniques.",
-      "price": "\$29/hr",
+          "Full home inspection, short circuit troubleshooting, and breaker box maintenance.",
+      "price": "\$32/hr",
       "rating": 4.9,
       "imageUrl":
-          "https://images.unsplash.com/photo-1584622650111-993a426fbf0a?q=80&w=400&auto=format&fit=crop",
+          "https://images.unsplash.com/photo-1621905251189-08b45d6a269e?q=80&w=400&auto=format&fit=crop",
     },
     {
-      "title": "Full House Deep Sanitation",
+      "title": "Light Fixture Installation",
       "description":
-          "Whole home eco-friendly disinfection, floor scrubbing, window cleaning, and trash clearance.",
-      "price": "\$42/hr",
+          "Chandelier, LED recessed lights, ceiling fan wiring, and dimmers setup.",
+      "price": "\$28/hr",
+      "rating": 4.8,
+      "imageUrl":
+          "https://images.unsplash.com/photo-1565814636199-ae8133055c1c?q=80&w=400&auto=format&fit=crop",
+    },
+    {
+      "title": "Outlet & Switch Upgrade",
+      "description":
+          "Modern smart switch installation, USB outlets, and grounding safety checks.",
+      "price": "\$24/hr",
+      "rating": 4.7,
+      "imageUrl":
+          "https://images.unsplash.com/photo-1558494949-ef010cbdcc31?q=80&w=400&auto=format&fit=crop",
+    },
+    {
+      "title": "EV Charger & Panel Setup",
+      "description":
+          "High-power EV charging station setup and 200A panel capacity upgrades.",
+      "price": "\$45/hr",
       "rating": 5.0,
       "imageUrl":
-          "https://images.unsplash.com/photo-1628177142898-93e36e4e3a50?q=80&w=400&auto=format&fit=crop",
+          "https://images.unsplash.com/photo-1544717305-2782549b5136?q=80&w=400&auto=format&fit=crop",
     },
   ];
 
@@ -108,10 +110,10 @@ class _CleaningServicesScreenState extends State<CleaningServicesScreen> {
                   ),
                   // Title
                   Text(
-                    "Cleaning",
+                    "Electrical",
                     style: AppTypography.headlineMedium.copyWith(fontSize: 20),
                   ),
-                  // Symmetric Spacer Placeholder (Filter Icon Removed)
+                  // Symmetric Spacer Placeholder
                   const SizedBox(width: 44, height: 44),
                 ],
               ),
@@ -189,7 +191,7 @@ class _CleaningServicesScreenState extends State<CleaningServicesScreen> {
                 physics: const BouncingScrollPhysics(),
                 padding: const EdgeInsets.symmetric(horizontal: 20),
                 children: [
-                  // Section Header: Top Professionals (Sort Button Removed Completely)
+                  // Section Header: Top Professionals
                   Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
@@ -200,7 +202,7 @@ class _CleaningServicesScreenState extends State<CleaningServicesScreen> {
                       ),
                       const SizedBox(height: 2),
                       Text(
-                        "28 Verified pros available today",
+                        "19 Verified pros available today",
                         style: AppTypography.bodySmall.copyWith(
                           color: AppColors.textSecondary,
                         ),
