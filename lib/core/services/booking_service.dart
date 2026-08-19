@@ -51,6 +51,25 @@ class BookingService {
     bookingsNotifier.value = currentBookings;
   }
 
+  static void cancelBooking(String id) {
+    final currentBookings = List<BookedService>.from(bookingsNotifier.value);
+    final index = currentBookings.indexWhere((b) => b.id == id);
+    if (index >= 0) {
+      final old = currentBookings[index];
+      currentBookings[index] = BookedService(
+        id: old.id,
+        title: old.title,
+        price: old.price,
+        date: old.date,
+        time: old.time,
+        imageUrl: old.imageUrl,
+        status: "CANCELLED",
+        bookedAt: old.bookedAt,
+      );
+      bookingsNotifier.value = currentBookings;
+    }
+  }
+
   static void clearBookings() {
     bookingsNotifier.value = [];
   }

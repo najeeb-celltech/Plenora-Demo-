@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
-import '../../../core/services/booking_service.dart';
 import '../../../core/services/cart_service.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_typography.dart';
 import '../../../core/widgets/primary_button.dart';
+import '../../cart/screens/checkout_screen.dart';
 
 class ServiceDetailSheet extends StatefulWidget {
   final String title;
@@ -42,60 +42,27 @@ class _ServiceDetailSheetState extends State<ServiceDetailSheet> {
   ];
 
   void _confirmBooking() {
-    BookingService.addBooking(
+    final selectedDate = _dates[_selectedDateIndex];
+    final selectedTime = _times[_selectedTimeIndex];
+
+    final directItem = CartItem(
       title: widget.title,
+      description: widget.description,
       price: widget.price,
-      date: _dates[_selectedDateIndex],
-      time: _times[_selectedTimeIndex],
+      priceNumeric: CartService.parsePrice(widget.price),
+      rating: widget.rating,
       imageUrl: widget.imageUrl,
+      category: "Service",
     );
 
     Navigator.pop(context); // Close bottom sheet
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
-        backgroundColor: AppColors.surface,
-        contentPadding: const EdgeInsets.all(24),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Container(
-              width: 72,
-              height: 72,
-              decoration: const BoxDecoration(
-                color: AppColors.primaryLight,
-                shape: BoxShape.circle,
-              ),
-              child: const Icon(
-                Icons.check_circle_rounded,
-                color: AppColors.primary,
-                size: 48,
-              ),
-            ),
-            const SizedBox(height: 16),
-            Text(
-              "Booking Confirmed!",
-              style: AppTypography.headlineMedium,
-              textAlign: TextAlign.center,
-            ),
-            const SizedBox(height: 8),
-            Text(
-              "Your booking for '${widget.title}' has been successfully scheduled for ${_dates[_selectedDateIndex]} at ${_times[_selectedTimeIndex]}.",
-              style: AppTypography.bodyMedium,
-              textAlign: TextAlign.center,
-            ),
-            const SizedBox(height: 24),
-            SizedBox(
-              width: double.infinity,
-              child: PrimaryButton(
-                text: "Great, Thanks!",
-                onPressed: () => Navigator.pop(context),
-                height: 48,
-                borderRadius: 24,
-              ),
-            ),
-          ],
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => CheckoutScreen(
+          directItem: directItem,
+          selectedDate: selectedDate,
+          selectedTime: selectedTime,
         ),
       ),
     );

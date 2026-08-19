@@ -743,12 +743,124 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
+  void _showCancelBookingConfirmation(BookedService item) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
+        backgroundColor: AppColors.surface,
+        contentPadding: const EdgeInsets.all(24),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Container(
+              width: 64,
+              height: 64,
+              decoration: const BoxDecoration(
+                color: Color(0xFFFFF0F0),
+                shape: BoxShape.circle,
+              ),
+              child: const Icon(
+                Icons.cancel_outlined,
+                color: Colors.redAccent,
+                size: 36,
+              ),
+            ),
+            const SizedBox(height: 16),
+            Text(
+              "Cancel this service?",
+              style: AppTypography.headlineMedium.copyWith(
+                color: AppColors.textPrimary,
+                fontSize: 20,
+              ),
+              textAlign: TextAlign.center,
+            ),
+            const SizedBox(height: 8),
+            Text(
+              "Are you sure you want to cancel '${item.title}' scheduled for ${item.date} at ${item.time}?",
+              style: AppTypography.bodyMedium.copyWith(
+                color: AppColors.textSecondary,
+                height: 1.4,
+              ),
+              textAlign: TextAlign.center,
+            ),
+            const SizedBox(height: 24),
+            Row(
+              children: [
+                Expanded(
+                  child: OutlinedButton(
+                    onPressed: () => Navigator.pop(context),
+                    style: OutlinedButton.styleFrom(
+                      side: BorderSide(color: Colors.grey.shade300),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(22),
+                      ),
+                      padding: const EdgeInsets.symmetric(vertical: 12),
+                    ),
+                    child: Text(
+                      "Keep Booking",
+                      style: AppTypography.titleMedium.copyWith(
+                        color: AppColors.textPrimary,
+                        fontSize: 13.5,
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: ElevatedButton(
+                    onPressed: () {
+                      final messenger = ScaffoldMessenger.of(context);
+                      Navigator.pop(context);
+                      BookingService.cancelBooking(item.id);
+                      messenger.showSnackBar(
+                        SnackBar(
+                          content: Text("Booking for '${item.title}' has been cancelled."),
+                          backgroundColor: Colors.redAccent,
+                          behavior: SnackBarBehavior.floating,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          duration: const Duration(seconds: 2),
+                        ),
+                      );
+                    },
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.redAccent,
+                      elevation: 0,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(22),
+                      ),
+                      padding: const EdgeInsets.symmetric(vertical: 12),
+                    ),
+                    child: Text(
+                      "Cancel Service",
+                      style: AppTypography.titleMedium.copyWith(
+                        color: Colors.white,
+                        fontSize: 13.5,
+                        fontWeight: FontWeight.w800,
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
   Widget _buildBookingsTab() {
     return ValueListenableBuilder<List<BookedService>>(
       valueListenable: BookingService.bookingsNotifier,
-      builder: (context, bookings, child) {
+      builder: (context, allBookings, child) {
+        final activeBookings =
+            allBookings.where((b) => b.status != "CANCELLED").toList();
+
         // Perfectly Centered Empty Bookings View
-        if (bookings.isEmpty) {
+        if (activeBookings.isEmpty) {
           return Padding(
             padding: const EdgeInsets.fromLTRB(20, 20, 20, 100),
             child: Column(
@@ -843,7 +955,9 @@ class _HomeScreenState extends State<HomeScreen> {
                 softWrap: true,
               ),
               const SizedBox(height: 24),
-              ...bookings.map((item) {
+              ...activeBookings.map((item) {
+                final isConfirmed = item.status == "CONFIRMED";
+
                 return Container(
                   margin: const EdgeInsets.only(bottom: 14),
                   padding: const EdgeInsets.all(18),
@@ -912,6 +1026,41 @@ class _HomeScreenState extends State<HomeScreen> {
                           ),
                         ],
                       ),
+                      if (isConfirmed) ...[
+                        const Padding(
+                          padding: EdgeInsets.symmetric(vertical: 12),
+                          child: Divider(height: 1),
+                        ),
+                        Align(
+                          alignment: Alignment.centerRight,
+                          child: OutlinedButton.icon(
+                            onPressed: () =>
+                                _showCancelBookingConfirmation(item),
+                            style: OutlinedButton.styleFrom(
+                              side: BorderSide(
+                                  color: Colors.redAccent.withValues(alpha: 0.5)),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(14),
+                              ),
+                              padding: const EdgeInsets.symmetric(
+                                  horizontal: 14, vertical: 8),
+                            ),
+                            icon: const Icon(
+                              Icons.cancel_outlined,
+                              color: Colors.redAccent,
+                              size: 16,
+                            ),
+                            label: Text(
+                              "Cancel Service",
+                              style: AppTypography.buttonText.copyWith(
+                                color: Colors.redAccent,
+                                fontSize: 12.5,
+                                fontWeight: FontWeight.w700,
+                              ),
+                            ),
+                          ),
+                        ),
+                      ],
                     ],
                   ),
                 );

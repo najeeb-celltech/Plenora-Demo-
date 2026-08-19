@@ -15,33 +15,6 @@ class ServiceCartScreen extends StatefulWidget {
 }
 
 class _ServiceCartScreenState extends State<ServiceCartScreen> {
-  final TextEditingController _couponController = TextEditingController();
-
-  @override
-  void dispose() {
-    _couponController.dispose();
-    super.dispose();
-  }
-
-  void _applyCoupon() {
-    final code = _couponController.text.trim();
-    if (code.isEmpty) return;
-
-    final success = CartService.applyCoupon(code);
-    if (success) {
-      FocusScope.of(context).unfocus();
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text("Coupon '${code.toUpperCase()}' applied successfully!"),
-          backgroundColor: AppColors.primary,
-          behavior: SnackBarBehavior.floating,
-          shape: roundedShape,
-          duration: const Duration(seconds: 2),
-        ),
-      );
-    }
-  }
-
   ShapeBorder get roundedShape =>
       RoundedRectangleBorder(borderRadius: BorderRadius.circular(12));
 
@@ -229,7 +202,6 @@ class _ServiceCartScreenState extends State<ServiceCartScreen> {
                     TextButton(
                       onPressed: () {
                         CartService.clearCart();
-                        _couponController.clear();
                       },
                       style: TextButton.styleFrom(
                         padding: EdgeInsets.zero,
@@ -408,70 +380,7 @@ class _ServiceCartScreenState extends State<ServiceCartScreen> {
                         ),
                         const SizedBox(height: 14),
 
-                        // Coupon Code Input Row (Perfectly aligned input & Apply button)
-                        Row(
-                          crossAxisAlignment: CrossAxisAlignment.center,
-                          children: [
-                            Expanded(
-                              child: Container(
-                                height: 44,
-                                alignment: Alignment.centerLeft,
-                                padding:
-                                    const EdgeInsets.symmetric(horizontal: 14),
-                                decoration: BoxDecoration(
-                                  color: AppColors.background,
-                                  borderRadius: BorderRadius.circular(14),
-                                  border:
-                                      Border.all(color: Colors.grey.shade300),
-                                ),
-                                child: TextField(
-                                  controller: _couponController,
-                                  textAlignVertical: TextAlignVertical.center,
-                                  style: AppTypography.bodyMedium.copyWith(
-                                    fontWeight: FontWeight.w700,
-                                    fontSize: 13,
-                                  ),
-                                  decoration: InputDecoration(
-                                    hintText: "Coupon Code (e.g. PLENORA10)",
-                                    hintStyle: AppTypography.bodySmall.copyWith(
-                                      color: AppColors.textMuted,
-                                      fontSize: 12,
-                                    ),
-                                    border: InputBorder.none,
-                                    enabledBorder: InputBorder.none,
-                                    focusedBorder: InputBorder.none,
-                                    isDense: true,
-                                    contentPadding: EdgeInsets.zero,
-                                  ),
-                                ),
-                              ),
-                            ),
-                            const SizedBox(width: 8),
-                            GestureDetector(
-                              onTap: _applyCoupon,
-                              child: Container(
-                                height: 44,
-                                alignment: Alignment.center,
-                                padding:
-                                    const EdgeInsets.symmetric(horizontal: 18),
-                                decoration: BoxDecoration(
-                                  color: AppColors.primary,
-                                  borderRadius: BorderRadius.circular(14),
-                                ),
-                                child: Text(
-                                  "Apply",
-                                  style: AppTypography.buttonText.copyWith(
-                                    color: Colors.white,
-                                    fontSize: 13,
-                                    fontWeight: FontWeight.w800,
-                                  ),
-                                ),
-                              ),
-                            ),
-                          ],
-                        ),
-
-                        const SizedBox(height: 16),
+                        const SizedBox(height: 4),
 
                         Row(
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -508,7 +417,6 @@ class _ServiceCartScreenState extends State<ServiceCartScreen> {
                                     GestureDetector(
                                       onTap: () {
                                         CartService.removeCoupon();
-                                        _couponController.clear();
                                       },
                                       child: const Icon(
                                         Icons.cancel_rounded,

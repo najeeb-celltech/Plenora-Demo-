@@ -6,7 +6,16 @@ import '../../../core/theme/app_typography.dart';
 import '../../../core/widgets/primary_button.dart';
 
 class CheckoutScreen extends StatefulWidget {
-  const CheckoutScreen({super.key});
+  final CartItem? directItem;
+  final String? selectedDate;
+  final String? selectedTime;
+
+  const CheckoutScreen({
+    super.key,
+    this.directItem,
+    this.selectedDate,
+    this.selectedTime,
+  });
 
   @override
   State<CheckoutScreen> createState() => _CheckoutScreenState();
@@ -15,6 +24,32 @@ class CheckoutScreen extends StatefulWidget {
 class _CheckoutScreenState extends State<CheckoutScreen> {
   int _selectedAddressIndex = 0;
   int _selectedPaymentIndex = 0;
+  final TextEditingController _couponController = TextEditingController();
+
+  @override
+  void dispose() {
+    _couponController.dispose();
+    super.dispose();
+  }
+
+  void _applyCoupon() {
+    final code = _couponController.text.trim();
+    if (code.isEmpty) return;
+
+    final success = CartService.applyCoupon(code);
+    if (success) {
+      FocusScope.of(context).unfocus();
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text("Coupon '${code.toUpperCase()}' applied successfully!"),
+          backgroundColor: AppColors.primary,
+          behavior: SnackBarBehavior.floating,
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+          duration: const Duration(seconds: 2),
+        ),
+      );
+    }
+  }
 
   final List<Map<String, String>> _addresses = [
     {
@@ -47,31 +82,47 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
     },
   ];
 
+  double _parsePrice(String priceStr) {
+    final cleaned = priceStr.replaceAll(RegExp(r'[^\d.]'), '');
+    return double.tryParse(cleaned) ?? 0.0;
+  }
+
   void _confirmAndPay() {
-    final items = CartService.itemsNotifier.value;
-    final total = CartService.totalPrice;
+    final List<CartItem> items = widget.directItem != null
+        ? [widget.directItem!]
+        : CartService.itemsNotifier.value;
 
     if (items.isEmpty) {
       Navigator.pop(context);
       return;
     }
 
+    final subtotal = widget.directItem != null
+        ? _parsePrice(widget.directItem!.price)
+        : CartService.subtotalPrice;
+    final discount = CartService.discountNotifier.value;
+    final total = (subtotal - discount).clamp(0.0, double.infinity);
+
     final selectedAddress = _addresses[_selectedAddressIndex]["address"]!;
+    final bookingDate = widget.selectedDate ?? "Today, Aug 19";
+    final bookingTime = widget.selectedTime ?? "10:00 AM";
 
     // Record all confirmed bookings in BookingService
     for (var item in items) {
       BookingService.addBooking(
         title: item.title,
         price: item.price,
-        date: "Today, Aug 19",
-        time: "10:00 AM",
+        date: bookingDate,
+        time: bookingTime,
         imageUrl: item.imageUrl,
         status: "CONFIRMED",
       );
     }
 
-    // Clear cart after checkout
-    CartService.clearCart();
+    // Clear cart if this was a cart checkout
+    if (widget.directItem == null) {
+      CartService.clearCart();
+    }
 
     showDialog(
       context: context,
@@ -104,7 +155,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
             ),
             const SizedBox(height: 8),
             Text(
-              "Your service has been confirmed for $selectedAddress. Total amount: \$${total.toStringAsFixed(2)}.",
+              "Your service has been confirmed for $selectedAddress ($bookingDate at $bookingTime). Total amount: \$${total.toStringAsFixed(2)}.",
               style: AppTypography.bodyMedium.copyWith(
                 color: AppColors.textSecondary,
                 height: 1.4,
@@ -184,9 +235,18 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
   Widget build(BuildContext context) {
     return ValueListenableBuilder<List<CartItem>>(
       valueListenable: CartService.itemsNotifier,
-      builder: (context, items, child) {
-        final total = CartService.totalPrice;
-        final count = CartService.totalCount;
+      builder: (context, cartItems, child) {
+        final List<CartItem> items = widget.directItem != null
+            ? [widget.directItem!]
+            : cartItems;
+
+        final subtotal = widget.directItem != null
+            ? _parsePrice(widget.directItem!.price)
+            : CartService.subtotalPrice;
+
+        final discount = CartService.discountNotifier.value;
+        final total = (subtotal - discount).clamp(0.0, double.infinity);
+        final count = items.length;
 
         return Scaffold(
           backgroundColor: AppColors.background,
@@ -472,8 +532,8 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                     ValueListenableBuilder<double>(
                       valueListenable: CartService.discountNotifier,
                       builder: (context, discount, child) {
-                        final subtotal = CartService.subtotalPrice;
-                        final appliedCoupon = CartService.couponCodeNotifier.value;
+                        final appliedCoupon =
+                            CartService.couponCodeNotifier.value;
 
                         return Container(
                           padding: const EdgeInsets.all(20),
@@ -498,6 +558,76 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                                 ),
                               ),
                               const SizedBox(height: 14),
+
+                              // Coupon Code Input Row
+                              Row(
+                                crossAxisAlignment: CrossAxisAlignment.center,
+                                children: [
+                                  Expanded(
+                                    child: Container(
+                                      height: 44,
+                                      alignment: Alignment.centerLeft,
+                                      padding: const EdgeInsets.symmetric(
+                                          horizontal: 14),
+                                      decoration: BoxDecoration(
+                                        color: AppColors.background,
+                                        borderRadius: BorderRadius.circular(14),
+                                        border: Border.all(
+                                            color: Colors.grey.shade300),
+                                      ),
+                                      child: TextField(
+                                        controller: _couponController,
+                                        textAlignVertical:
+                                            TextAlignVertical.center,
+                                        style:
+                                            AppTypography.bodyMedium.copyWith(
+                                          fontWeight: FontWeight.w700,
+                                          fontSize: 13,
+                                        ),
+                                        decoration: InputDecoration(
+                                          hintText:
+                                              "Coupon Code (e.g. PLENORA10)",
+                                          hintStyle:
+                                              AppTypography.bodySmall.copyWith(
+                                            color: AppColors.textMuted,
+                                            fontSize: 12,
+                                          ),
+                                          border: InputBorder.none,
+                                          enabledBorder: InputBorder.none,
+                                          focusedBorder: InputBorder.none,
+                                          isDense: true,
+                                          contentPadding: EdgeInsets.zero,
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                                  const SizedBox(width: 8),
+                                  GestureDetector(
+                                    onTap: _applyCoupon,
+                                    child: Container(
+                                      height: 44,
+                                      alignment: Alignment.center,
+                                      padding: const EdgeInsets.symmetric(
+                                          horizontal: 18),
+                                      decoration: BoxDecoration(
+                                        color: AppColors.primary,
+                                        borderRadius: BorderRadius.circular(14),
+                                      ),
+                                      child: Text(
+                                        "Apply",
+                                        style:
+                                            AppTypography.buttonText.copyWith(
+                                          color: Colors.white,
+                                          fontSize: 13,
+                                          fontWeight: FontWeight.w800,
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                              const SizedBox(height: 16),
+
                               Row(
                                 mainAxisAlignment:
                                     MainAxisAlignment.spaceBetween,
@@ -514,16 +644,36 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                                   mainAxisAlignment:
                                       MainAxisAlignment.spaceBetween,
                                   children: [
-                                    Text(
-                                      "Promo Discount (${appliedCoupon ?? 'Applied'})",
-                                      style: AppTypography.bodyMedium.copyWith(
-                                        color: AppColors.primary,
-                                        fontWeight: FontWeight.w700,
+                                    Expanded(
+                                      child: Row(
+                                        children: [
+                                          Text(
+                                            "Promo Discount (${appliedCoupon ?? 'Applied'})",
+                                            style: AppTypography.bodyMedium
+                                                .copyWith(
+                                              color: AppColors.primary,
+                                              fontWeight: FontWeight.w700,
+                                            ),
+                                          ),
+                                          const SizedBox(width: 6),
+                                          GestureDetector(
+                                            onTap: () {
+                                              CartService.removeCoupon();
+                                              _couponController.clear();
+                                            },
+                                            child: const Icon(
+                                              Icons.cancel_rounded,
+                                              color: Colors.redAccent,
+                                              size: 16,
+                                            ),
+                                          ),
+                                        ],
                                       ),
                                     ),
                                     Text(
                                       "-\$${discount.toStringAsFixed(2)}",
-                                      style: AppTypography.titleMedium.copyWith(
+                                      style:
+                                          AppTypography.titleMedium.copyWith(
                                         color: AppColors.primary,
                                         fontWeight: FontWeight.w800,
                                       ),
