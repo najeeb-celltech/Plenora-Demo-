@@ -30,9 +30,26 @@ class CartService {
   static final ValueNotifier<String?> couponCodeNotifier =
       ValueNotifier<String?>(null);
 
+  static String formatInr(num amount) {
+    final int val = amount.round();
+    final String s = val.toString();
+    if (s.length <= 3) return '₹$s';
+    final String last3 = s.substring(s.length - 3);
+    String other = s.substring(0, s.length - 3);
+    final List<String> parts = [];
+    while (other.length > 2) {
+      parts.insert(0, other.substring(other.length - 2));
+      other = other.substring(0, other.length - 2);
+    }
+    if (other.isNotEmpty) {
+      parts.insert(0, other);
+    }
+    return '₹${parts.join(',')},$last3';
+  }
+
   static double parsePrice(String priceStr) {
     final cleaned = priceStr.replaceAll(RegExp(r'[^0-9.]'), '');
-    return double.tryParse(cleaned) ?? 29.0;
+    return double.tryParse(cleaned) ?? 799.0;
   }
 
   static void addService({
@@ -79,7 +96,7 @@ class CartService {
     if (cleanCode.isEmpty) return false;
 
     if (cleanCode == "PLENORA10" || cleanCode == "SAVE10") {
-      discountNotifier.value = 10.0;
+      discountNotifier.value = 150.0;
       couponCodeNotifier.value = cleanCode;
       return true;
     } else if (cleanCode == "PLENORA50" || cleanCode == "HALF") {

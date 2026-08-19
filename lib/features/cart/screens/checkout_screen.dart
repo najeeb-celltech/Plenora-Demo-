@@ -155,7 +155,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
             ),
             const SizedBox(height: 8),
             Text(
-              "Your service has been confirmed for $selectedAddress ($bookingDate at $bookingTime). Total amount: \$${total.toStringAsFixed(2)}.",
+              "Your service has been confirmed for $selectedAddress ($bookingDate at $bookingTime). Total amount: ${CartService.formatInr(total)}.",
               style: AppTypography.bodyMedium.copyWith(
                 color: AppColors.textSecondary,
                 height: 1.4,
@@ -632,9 +632,36 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                                 mainAxisAlignment:
                                     MainAxisAlignment.spaceBetween,
                                 children: [
-                                  Text("Selected Services ($count)",
-                                      style: AppTypography.bodyMedium),
-                                  Text("\$${subtotal.toStringAsFixed(2)}",
+                                  Text(
+                                    "Scheduled Date & Time",
+                                    style: AppTypography.bodyMedium,
+                                  ),
+                                  const SizedBox(width: 8),
+                                  Flexible(
+                                    child: Text(
+                                      "${widget.selectedDate ?? 'Today, Aug 19'} • ${widget.selectedTime ?? '10:00 AM'}",
+                                      style: AppTypography.bodyMedium.copyWith(
+                                        color: AppColors.primary,
+                                        fontWeight: FontWeight.w700,
+                                        fontSize: 12.5,
+                                      ),
+                                      overflow: TextOverflow.ellipsis,
+                                      textAlign: TextAlign.end,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                              const SizedBox(height: 8),
+                              Row(
+                                mainAxisAlignment:
+                                    MainAxisAlignment.spaceBetween,
+                                children: [
+                                  Expanded(
+                                    child: Text("Selected Services ($count)",
+                                        style: AppTypography.bodyMedium),
+                                  ),
+                                  const SizedBox(width: 8),
+                                  Text(CartService.formatInr(subtotal),
                                       style: AppTypography.titleMedium),
                                 ],
                               ),
@@ -647,12 +674,15 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                                     Expanded(
                                       child: Row(
                                         children: [
-                                          Text(
-                                            "Promo Discount (${appliedCoupon ?? 'Applied'})",
-                                            style: AppTypography.bodyMedium
-                                                .copyWith(
-                                              color: AppColors.primary,
-                                              fontWeight: FontWeight.w700,
+                                          Flexible(
+                                            child: Text(
+                                              "Promo Discount (${appliedCoupon ?? 'Applied'})",
+                                              style: AppTypography.bodyMedium
+                                                  .copyWith(
+                                                color: AppColors.primary,
+                                                fontWeight: FontWeight.w700,
+                                              ),
+                                              overflow: TextOverflow.ellipsis,
                                             ),
                                           ),
                                           const SizedBox(width: 6),
@@ -670,8 +700,9 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                                         ],
                                       ),
                                     ),
+                                    const SizedBox(width: 8),
                                     Text(
-                                      "-\$${discount.toStringAsFixed(2)}",
+                                      "-${CartService.formatInr(discount)}",
                                       style:
                                           AppTypography.titleMedium.copyWith(
                                         color: AppColors.primary,
@@ -686,8 +717,11 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                                 mainAxisAlignment:
                                     MainAxisAlignment.spaceBetween,
                                 children: [
-                                  Text("Booking & Inspection Fee",
-                                      style: AppTypography.bodyMedium),
+                                  Expanded(
+                                    child: Text("Booking & Inspection Fee",
+                                        style: AppTypography.bodyMedium),
+                                  ),
+                                  const SizedBox(width: 8),
                                   Text("FREE",
                                       style: AppTypography.titleMedium.copyWith(
                                         color: AppColors.primary,
@@ -703,10 +737,13 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                                 mainAxisAlignment:
                                     MainAxisAlignment.spaceBetween,
                                 children: [
-                                  Text("Total Amount to Pay",
-                                      style: AppTypography.titleLarge),
+                                  Expanded(
+                                    child: Text("Total Amount to Pay",
+                                        style: AppTypography.titleLarge),
+                                  ),
+                                  const SizedBox(width: 8),
                                   Text(
-                                    "\$${total.toStringAsFixed(2)}",
+                                    CartService.formatInr(total),
                                     style: AppTypography.headlineMedium
                                         .copyWith(
                                       color: AppColors.primary,
@@ -742,7 +779,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                       width: double.infinity,
                       child: PrimaryButton(
                         text:
-                            "Confirm Booking & Pay (\$${total.toStringAsFixed(2)})",
+                            "Confirm Booking & Pay (${CartService.formatInr(total)})",
                         onPressed: _confirmAndPay,
                         height: 52,
                         borderRadius: 26,

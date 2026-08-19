@@ -26,9 +26,6 @@ class ServiceDetailSheet extends StatefulWidget {
 }
 
 class _ServiceDetailSheetState extends State<ServiceDetailSheet> {
-  int _selectedDateIndex = 0;
-  int _selectedTimeIndex = 0;
-
   final List<String> _dates = [
     "Today, Aug 19",
     "Tomorrow, Aug 20",
@@ -42,29 +39,206 @@ class _ServiceDetailSheetState extends State<ServiceDetailSheet> {
   ];
 
   void _confirmBooking() {
-    final selectedDate = _dates[_selectedDateIndex];
-    final selectedTime = _times[_selectedTimeIndex];
+    int tempDateIndex = 0;
+    int tempTimeIndex = 0;
 
-    final directItem = CartItem(
-      title: widget.title,
-      description: widget.description,
-      price: widget.price,
-      priceNumeric: CartService.parsePrice(widget.price),
-      rating: widget.rating,
-      imageUrl: widget.imageUrl,
-      category: "Service",
-    );
+    showDialog(
+      context: context,
+      builder: (dialogContext) {
+        return StatefulBuilder(
+          builder: (context, setModalState) {
+            final selectedDate = _dates[tempDateIndex];
+            final selectedTime = _times[tempTimeIndex];
 
-    Navigator.pop(context); // Close bottom sheet
-    Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder: (context) => CheckoutScreen(
-          directItem: directItem,
-          selectedDate: selectedDate,
-          selectedTime: selectedTime,
-        ),
-      ),
+            return AlertDialog(
+              shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(24)),
+              backgroundColor: AppColors.surface,
+              contentPadding: const EdgeInsets.all(20),
+              content: SingleChildScrollView(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    // Header Row with Title and Close Button
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Text(
+                          "Schedule Appointment",
+                          style: AppTypography.titleLarge.copyWith(
+                            fontSize: 18,
+                            fontWeight: FontWeight.w700,
+                          ),
+                        ),
+                        GestureDetector(
+                          onTap: () => Navigator.pop(dialogContext),
+                          child: Container(
+                            width: 32,
+                            height: 32,
+                            decoration: const BoxDecoration(
+                              color: AppColors.background,
+                              shape: BoxShape.circle,
+                            ),
+                            child: const Icon(
+                              Icons.close_rounded,
+                              size: 18,
+                              color: AppColors.textSecondary,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 16),
+
+                    // Service Date Label & Selection Chips
+                    Text(
+                      "Service Date",
+                      style: AppTypography.titleMedium.copyWith(
+                        fontSize: 14,
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    SingleChildScrollView(
+                      scrollDirection: Axis.horizontal,
+                      physics: const BouncingScrollPhysics(),
+                      child: Row(
+                        children: List.generate(_dates.length, (index) {
+                          final isSelected = tempDateIndex == index;
+                          return GestureDetector(
+                            onTap: () =>
+                                setModalState(() => tempDateIndex = index),
+                            child: AnimatedContainer(
+                              duration: const Duration(milliseconds: 180),
+                              margin: const EdgeInsets.only(right: 8),
+                              padding: const EdgeInsets.symmetric(
+                                  horizontal: 14, vertical: 8),
+                              decoration: BoxDecoration(
+                                color: isSelected
+                                    ? AppColors.primary
+                                    : AppColors.background,
+                                borderRadius: BorderRadius.circular(14),
+                                border: Border.all(
+                                  color: isSelected
+                                      ? AppColors.primary
+                                      : Colors.grey.shade300,
+                                ),
+                              ),
+                              child: Text(
+                                _dates[index],
+                                style: AppTypography.bodySmall.copyWith(
+                                  color: isSelected
+                                      ? Colors.white
+                                      : AppColors.textPrimary,
+                                  fontWeight: isSelected
+                                      ? FontWeight.w700
+                                      : FontWeight.w600,
+                                  fontSize: 12,
+                                ),
+                              ),
+                            ),
+                          );
+                        }),
+                      ),
+                    ),
+
+                    const SizedBox(height: 16),
+
+                    // Service Time Label & Selection Chips
+                    Text(
+                      "Service Time",
+                      style: AppTypography.titleMedium.copyWith(
+                        fontSize: 14,
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    Wrap(
+                      spacing: 8,
+                      runSpacing: 8,
+                      children: List.generate(_times.length, (index) {
+                        final isSelected = tempTimeIndex == index;
+                        return GestureDetector(
+                          onTap: () =>
+                              setModalState(() => tempTimeIndex = index),
+                          child: AnimatedContainer(
+                            duration: const Duration(milliseconds: 180),
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 14, vertical: 8),
+                            decoration: BoxDecoration(
+                              color: isSelected
+                                  ? AppColors.primary
+                                  : AppColors.background,
+                              borderRadius: BorderRadius.circular(14),
+                              border: Border.all(
+                                color: isSelected
+                                    ? AppColors.primary
+                                    : Colors.grey.shade300,
+                              ),
+                            ),
+                            child: Text(
+                              _times[index],
+                              style: AppTypography.bodySmall.copyWith(
+                                color: isSelected
+                                    ? Colors.white
+                                    : AppColors.textPrimary,
+                                fontWeight: isSelected
+                                    ? FontWeight.w700
+                                    : FontWeight.w600,
+                                fontSize: 12,
+                              ),
+                            ),
+                          ),
+                        );
+                      }),
+                    ),
+
+                    const SizedBox(height: 22),
+
+                    // Confirm & Continue Button
+                    SizedBox(
+                      width: double.infinity,
+                      child: PrimaryButton(
+                        text: "Confirm & Continue",
+                        onPressed: () {
+                          final directItem = CartItem(
+                            title: widget.title,
+                            description: widget.description,
+                            price: widget.price,
+                            priceNumeric: CartService.parsePrice(widget.price),
+                            rating: widget.rating,
+                            imageUrl: widget.imageUrl,
+                            category: "Service",
+                          );
+
+                          // Close dialog and detail bottom sheet
+                          final nav = Navigator.of(context);
+                          Navigator.pop(dialogContext); // Close dialog
+                          nav.pop(); // Close bottom sheet
+
+                          nav.push(
+                            MaterialPageRoute(
+                              builder: (context) => CheckoutScreen(
+                                directItem: directItem,
+                                selectedDate: selectedDate,
+                                selectedTime: selectedTime,
+                              ),
+                            ),
+                          );
+                        },
+                        height: 46,
+                        borderRadius: 23,
+                        leadingIcon: Icons.arrow_forward_rounded,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            );
+          },
+        );
+      },
     );
   }
 
@@ -441,105 +615,7 @@ class _ServiceDetailSheetState extends State<ServiceDetailSheet> {
                             );
                           }),
 
-                          const SizedBox(height: 20),
-
-                          // Select Date Section
-                          Text(
-                            "Select Date",
-                            style:
-                                AppTypography.titleLarge.copyWith(fontSize: 17),
-                          ),
-                          const SizedBox(height: 10),
-                          SingleChildScrollView(
-                            scrollDirection: Axis.horizontal,
-                            child: Row(
-                              children: List.generate(_dates.length, (index) {
-                                final isSelected = _selectedDateIndex == index;
-                                return GestureDetector(
-                                  onTap: () => setState(
-                                      () => _selectedDateIndex = index),
-                                  child: Container(
-                                    margin: const EdgeInsets.only(right: 10),
-                                    padding: const EdgeInsets.symmetric(
-                                        horizontal: 16, vertical: 10),
-                                    decoration: BoxDecoration(
-                                      color: isSelected
-                                          ? AppColors.primary
-                                          : AppColors.surface,
-                                      borderRadius: BorderRadius.circular(16),
-                                      boxShadow: isSelected
-                                          ? const [
-                                              BoxShadow(
-                                                color: Color(0x200E5D44),
-                                                blurRadius: 8,
-                                                offset: Offset(0, 3),
-                                              ),
-                                            ]
-                                          : const [],
-                                    ),
-                                    child: Text(
-                                      _dates[index],
-                                      style: AppTypography.chipText.copyWith(
-                                        color: isSelected
-                                            ? AppColors.textWhite
-                                            : AppColors.textPrimary,
-                                      ),
-                                    ),
-                                  ),
-                                );
-                              }),
-                            ),
-                          ),
-
-                          const SizedBox(height: 20),
-
-                          // Select Time Slot Section (Ample clearance above bottom buttons)
-                          Text(
-                            "Select Time Slot",
-                            style:
-                                AppTypography.titleLarge.copyWith(fontSize: 17),
-                          ),
-                          const SizedBox(height: 10),
-                          Wrap(
-                            spacing: 10,
-                            runSpacing: 10,
-                            children: List.generate(_times.length, (index) {
-                              final isSelected = _selectedTimeIndex == index;
-                              return GestureDetector(
-                                onTap: () => setState(
-                                    () => _selectedTimeIndex = index),
-                                child: Container(
-                                  padding: const EdgeInsets.symmetric(
-                                      horizontal: 16, vertical: 10),
-                                  decoration: BoxDecoration(
-                                    color: isSelected
-                                        ? AppColors.primary
-                                        : AppColors.surface,
-                                    borderRadius: BorderRadius.circular(16),
-                                    boxShadow: isSelected
-                                        ? const [
-                                            BoxShadow(
-                                              color: Color(0x200E5D44),
-                                              blurRadius: 8,
-                                              offset: Offset(0, 3),
-                                            ),
-                                          ]
-                                        : const [],
-                                  ),
-                                  child: Text(
-                                    _times[index],
-                                    style: AppTypography.chipText.copyWith(
-                                      color: isSelected
-                                          ? AppColors.textWhite
-                                          : AppColors.textPrimary,
-                                    ),
-                                  ),
-                                ),
-                              );
-                            }),
-                          ),
-
-                          const SizedBox(height: 32),
+                          const SizedBox(height: 24),
                         ],
                       ),
                     ),

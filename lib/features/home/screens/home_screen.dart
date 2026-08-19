@@ -119,7 +119,7 @@ class _HomeScreenState extends State<HomeScreen> {
       "category": "Cleaning",
       "description":
           "Deep steam sanitization and stain removal for living room furniture and carpets.",
-      "price": "\$29/hr",
+      "price": "₹799/hr",
       "rating": 4.9,
       "imageUrl":
           "https://images.unsplash.com/photo-1584622650111-993a426fbf0a?q=80&w=300&auto=format&fit=crop",
@@ -129,7 +129,7 @@ class _HomeScreenState extends State<HomeScreen> {
       "category": "Cleaning",
       "description":
           "Grease removal, cabinet polishing, and thorough appliance scrubbing.",
-      "price": "\$35/hr",
+      "price": "₹999/hr",
       "rating": 4.8,
       "imageUrl": "assets/image/kitchen-service.png",
     },
@@ -138,7 +138,7 @@ class _HomeScreenState extends State<HomeScreen> {
       "category": "Cleaning",
       "description":
           "Tile gunk scrubbing, mirror shine, and anti-bacterial disinfections.",
-      "price": "\$25/hr",
+      "price": "₹699/hr",
       "rating": 4.9,
       "imageUrl": "assets/image/bathroom-service.png",
     },
@@ -1104,7 +1104,7 @@ class _HomeScreenState extends State<HomeScreen> {
       "11. Service Quality & 30-Day Guarantee\n"
       "We strive for 100% customer satisfaction. If any cleaned area fails to meet reasonable quality standards, notify us within 30 days for a free re-cleaning of the affected service area.\n\n"
       "12. Damage & Liability Limitations\n"
-      "While our service professionals exercise extreme care, Plenora's liability for accidental damage during service is limited to direct proven damages up to \$500 per incident. Plenora is not liable for pre-existing property wear or fragile, unanchored items.\n\n"
+      "While our service professionals exercise extreme care, Plenora's liability for accidental damage during service is limited to direct proven damages up to ₹25,000 per incident. Plenora is not liable for pre-existing property wear or fragile, unanchored items.\n\n"
       "13. Third-Party Service Professionals\n"
       "Service professionals are independent contractors background-vetted by Plenora. Plenora maintains rigorous quality and safety standards for all onboarded partners.\n\n"
       "14. Account Responsibilities\n"

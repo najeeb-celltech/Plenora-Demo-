@@ -21,7 +21,7 @@ class _PaintingServicesScreenState extends State<PaintingServicesScreen> {
       "title": "Interior Room Painting",
       "description":
           "Wall priming, precision edging, premium matte/satin coats, and furniture protection.",
-      "price": "\$30/hr",
+      "price": "₹849/hr",
       "rating": 4.9,
       "imageUrl":
           "https://images.unsplash.com/photo-1562259949-e8e7689d7828?q=80&w=400&auto=format&fit=crop",
@@ -30,7 +30,7 @@ class _PaintingServicesScreenState extends State<PaintingServicesScreen> {
       "title": "Exterior Wall Coating",
       "description":
           "Weatherproof acrylic finish, pressure wash surface prep, and crack filling.",
-      "price": "\$38/hr",
+      "price": "₹1,099/hr",
       "rating": 4.8,
       "imageUrl":
           "https://images.unsplash.com/photo-1589939705384-5185137a7f0f?q=80&w=400&auto=format&fit=crop",
@@ -39,7 +39,7 @@ class _PaintingServicesScreenState extends State<PaintingServicesScreen> {
       "title": "Accent Wall Design",
       "description":
           "Textured finish, geometric patterns, wallpaper installation, and custom color matching.",
-      "price": "\$35/hr",
+      "price": "₹999/hr",
       "rating": 5.0,
       "imageUrl":
           "https://images.unsplash.com/photo-1513694203232-719a280e022f?q=80&w=400&auto=format&fit=crop",
@@ -48,7 +48,7 @@ class _PaintingServicesScreenState extends State<PaintingServicesScreen> {
       "title": "Cabinet & Wood Polishing",
       "description":
           "Sanding, stain application, polyurethane protective sealant, and trim restoration.",
-      "price": "\$27/hr",
+      "price": "₹749/hr",
       "rating": 4.7,
       "imageUrl":
           "https://images.unsplash.com/photo-1538688525198-9b88f6f53126?q=80&w=400&auto=format&fit=crop",

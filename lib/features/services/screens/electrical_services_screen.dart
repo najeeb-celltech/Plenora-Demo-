@@ -14,14 +14,14 @@ class ElectricalServicesScreen extends StatefulWidget {
 class _ElectricalServicesScreenState extends State<ElectricalServicesScreen> {
   int _selectedFilterIndex = 0;
 
-  final List<String> _filters = const ["All", "Top Rated", "Under \$30", "Emergency"];
+  final List<String> _filters = const ["All", "Top Rated", "Under ₹999", "Emergency"];
 
   final List<Map<String, dynamic>> _professionals = const [
     {
       "title": "Wiring & Circuit Repair",
       "description":
           "Full home inspection, short circuit troubleshooting, and breaker box maintenance.",
-      "price": "\$32/hr",
+      "price": "₹899/hr",
       "rating": 4.9,
       "imageUrl":
           "https://images.unsplash.com/photo-1621905251189-08b45d6a269e?q=80&w=400&auto=format&fit=crop",
@@ -30,7 +30,7 @@ class _ElectricalServicesScreenState extends State<ElectricalServicesScreen> {
       "title": "Light Fixture Installation",
       "description":
           "Chandelier, LED recessed lights, ceiling fan wiring, and dimmers setup.",
-      "price": "\$28/hr",
+      "price": "₹749/hr",
       "rating": 4.8,
       "imageUrl":
           "https://images.unsplash.com/photo-1565814636199-ae8133055c1c?q=80&w=400&auto=format&fit=crop",
@@ -39,7 +39,7 @@ class _ElectricalServicesScreenState extends State<ElectricalServicesScreen> {
       "title": "Outlet & Switch Upgrade",
       "description":
           "Modern smart switch installation, USB outlets, and grounding safety checks.",
-      "price": "\$24/hr",
+      "price": "₹599/hr",
       "rating": 4.7,
       "imageUrl":
           "https://images.unsplash.com/photo-1558494949-ef010cbdcc31?q=80&w=400&auto=format&fit=crop",
@@ -48,7 +48,7 @@ class _ElectricalServicesScreenState extends State<ElectricalServicesScreen> {
       "title": "EV Charger & Panel Setup",
       "description":
           "High-power EV charging station setup and 200A panel capacity upgrades.",
-      "price": "\$45/hr",
+      "price": "₹1,299/hr",
       "rating": 5.0,
       "imageUrl":
           "https://images.unsplash.com/photo-1544717305-2782549b5136?q=80&w=400&auto=format&fit=crop",

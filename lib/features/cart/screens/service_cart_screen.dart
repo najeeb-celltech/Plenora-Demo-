@@ -392,7 +392,7 @@ class _ServiceCartScreenState extends State<ServiceCartScreen> {
                               ),
                             ),
                             Text(
-                              "\$${subtotal.toStringAsFixed(2)}",
+                              CartService.formatInr(subtotal),
                               style: AppTypography.titleMedium,
                             ),
                           ],
@@ -428,7 +428,7 @@ class _ServiceCartScreenState extends State<ServiceCartScreen> {
                                 ),
                               ),
                               Text(
-                                "-\$${discount.toStringAsFixed(2)}",
+                                "-${CartService.formatInr(discount)}",
                                 style: AppTypography.titleMedium.copyWith(
                                   color: AppColors.primary,
                                   fontWeight: FontWeight.w800,
@@ -471,7 +471,7 @@ class _ServiceCartScreenState extends State<ServiceCartScreen> {
                               ),
                             ),
                             Text(
-                              "\$${total.toStringAsFixed(2)}",
+                              CartService.formatInr(total),
                               style: AppTypography.headlineMedium.copyWith(
                                 color: AppColors.primary,
                                 fontWeight: FontWeight.w800,
@@ -493,7 +493,7 @@ class _ServiceCartScreenState extends State<ServiceCartScreen> {
                 width: double.infinity,
                 child: PrimaryButton(
                   text:
-                      "Proceed to Booking (\$${total.toStringAsFixed(2)})",
+                      "Proceed to Booking (${CartService.formatInr(total)})",
                   onPressed: () => _checkout(context),
                   height: 52,
                   borderRadius: 26,

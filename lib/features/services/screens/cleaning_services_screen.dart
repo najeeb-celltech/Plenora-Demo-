@@ -14,14 +14,14 @@ class CleaningServicesScreen extends StatefulWidget {
 class _CleaningServicesScreenState extends State<CleaningServicesScreen> {
   int _selectedFilterIndex = 0;
 
-  final List<String> _filters = const ["All", "Top Rated", "Under \$30", "Nearby"];
+  final List<String> _filters = const ["All", "Top Rated", "Under ₹999", "Nearby"];
 
   final List<Map<String, dynamic>> _professionals = const [
     {
       "title": "Kitchen Sparkle Service",
       "description":
           "Detailed grease and appliance cleaning, inside oven/fridge treatment, and counter shine.",
-      "price": "\$35/hr",
+      "price": "₹999/hr",
       "rating": 4.8,
       "imageUrl": "assets/image/kitchen-service.png",
     },
@@ -29,7 +29,7 @@ class _CleaningServicesScreenState extends State<CleaningServicesScreen> {
       "title": "Bathroom Cleaning",
       "description":
           "Tile gunk scrubbing, mirror shine, bathtub sanitization, and anti-bacterial disinfections.",
-      "price": "\$25/hr",
+      "price": "₹699/hr",
       "rating": 4.9,
       "imageUrl": "assets/image/bathroom-service.png",
     },
@@ -37,7 +37,7 @@ class _CleaningServicesScreenState extends State<CleaningServicesScreen> {
       "title": "Carpet Cleaning",
       "description":
           "Stain removal and full upholstery cleaning using hot water extraction techniques.",
-      "price": "\$29/hr",
+      "price": "₹799/hr",
       "rating": 4.9,
       "imageUrl":
           "https://images.unsplash.com/photo-1584622650111-993a426fbf0a?q=80&w=400&auto=format&fit=crop",
@@ -46,7 +46,7 @@ class _CleaningServicesScreenState extends State<CleaningServicesScreen> {
       "title": "Full House Deep Sanitation",
       "description":
           "Whole home eco-friendly disinfection, floor scrubbing, window cleaning, and trash clearance.",
-      "price": "\$42/hr",
+      "price": "₹1,499/hr",
       "rating": 5.0,
       "imageUrl":
           "https://images.unsplash.com/photo-1628177142898-93e36e4e3a50?q=80&w=400&auto=format&fit=crop",

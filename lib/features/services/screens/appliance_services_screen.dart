@@ -14,14 +14,14 @@ class ApplianceServicesScreen extends StatefulWidget {
 class _ApplianceServicesScreenState extends State<ApplianceServicesScreen> {
   int _selectedFilterIndex = 0;
 
-  final List<String> _filters = const ["All", "Top Rated", "Under \$30", "Same Day"];
+  final List<String> _filters = const ["All", "Top Rated", "Under ₹999", "Same Day"];
 
   final List<Map<String, dynamic>> _professionals = const [
     {
       "title": "Refrigerator & Freezer Repair",
       "description":
           "Compressor diagnostics, coolant refill, defrosting issue fix, and seal checks.",
-      "price": "\$34/hr",
+      "price": "₹949/hr",
       "rating": 4.9,
       "imageUrl":
           "https://images.unsplash.com/photo-1581092921461-eab62e97a780?q=80&w=400&auto=format&fit=crop",
@@ -30,7 +30,7 @@ class _ApplianceServicesScreenState extends State<ApplianceServicesScreen> {
       "title": "Washing Machine & Dryer Care",
       "description":
           "Drum belt replacement, drain pump unclogging, and vibration dampening.",
-      "price": "\$29/hr",
+      "price": "₹799/hr",
       "rating": 4.8,
       "imageUrl":
           "https://images.unsplash.com/photo-1610557892470-55d9e80c0bce?q=80&w=400&auto=format&fit=crop",
@@ -39,7 +39,7 @@ class _ApplianceServicesScreenState extends State<ApplianceServicesScreen> {
       "title": "Oven & Stove Servicing",
       "description":
           "Igniter replacement, heating element calibration, and gas burner cleaning.",
-      "price": "\$26/hr",
+      "price": "₹699/hr",
       "rating": 4.7,
       "imageUrl":
           "https://images.unsplash.com/photo-1556911220-e15b29be8c8f?q=80&w=400&auto=format&fit=crop",
@@ -48,7 +48,7 @@ class _ApplianceServicesScreenState extends State<ApplianceServicesScreen> {
       "title": "Dishwasher Repair & Clean",
       "description":
           "Water pump repair, spray arm unclogging, and anti-leak gasket installation.",
-      "price": "\$30/hr",
+      "price": "₹849/hr",
       "rating": 4.9,
       "imageUrl":
           "https://images.unsplash.com/photo-1584622650111-993a426fbf0a?q=80&w=400&auto=format&fit=crop",
