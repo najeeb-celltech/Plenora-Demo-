@@ -55,12 +55,14 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
     {
       "type": "Home Address",
       "address": "124 Green Park, Block B, New Delhi",
-      "icon": "home",
+      "assetIcon": "assets/icons/addresses-icon.png",
+      "fallbackIcon": "home",
     },
     {
       "type": "Office Address",
       "address": "Tower 4, Cyber City, Sector 24",
-      "icon": "work",
+      "assetIcon": "assets/icons/office_address-icon.png",
+      "fallbackIcon": "work",
     },
   ];
 
@@ -68,17 +70,20 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
     {
       "title": "Cash After Service",
       "subtitle": "Pay cash or UPI directly to technician after job completion.",
-      "icon": Icons.payments_rounded,
+      "assetIcon": "assets/icons/cash_after_service-icon.png",
+      "fallbackIcon": Icons.payments_rounded,
     },
     {
       "title": "UPI / GPay / PhonePe",
       "subtitle": "Instant & secure payment via any UPI app.",
-      "icon": Icons.account_balance_wallet_rounded,
+      "assetIcon": "assets/icons/upi-icon.png",
+      "fallbackIcon": Icons.account_balance_wallet_rounded,
     },
     {
       "title": "Credit / Debit Card",
       "subtitle": "Visa, Mastercard, RuPay & Amex supported.",
-      "icon": Icons.credit_card_rounded,
+      "assetIcon": "assets/icons/cards-icon.png",
+      "fallbackIcon": Icons.credit_card_rounded,
     },
   ];
 
@@ -407,14 +412,23 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                             ),
                             child: Row(
                               children: [
-                                Icon(
-                                  addr["icon"] == "home"
-                                      ? Icons.home_rounded
-                                      : Icons.work_rounded,
+                                Image.asset(
+                                  addr["assetIcon"]!,
+                                  width: 22,
+                                  height: 22,
                                   color: isSelected
                                       ? AppColors.primary
                                       : AppColors.textSecondary,
-                                  size: 22,
+                                  errorBuilder: (context, error, stackTrace) =>
+                                      Icon(
+                                    addr["fallbackIcon"] == "home"
+                                        ? Icons.home_rounded
+                                        : Icons.work_rounded,
+                                    color: isSelected
+                                        ? AppColors.primary
+                                        : AppColors.textSecondary,
+                                    size: 22,
+                                  ),
                                 ),
                                 const SizedBox(width: 12),
                                 Expanded(
@@ -486,12 +500,21 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                             ),
                             child: Row(
                               children: [
-                                Icon(
-                                  method["icon"] as IconData,
+                                Image.asset(
+                                  method["assetIcon"] as String,
+                                  width: 22,
+                                  height: 22,
                                   color: isSelected
                                       ? AppColors.primary
                                       : AppColors.textSecondary,
-                                  size: 22,
+                                  errorBuilder: (context, error, stackTrace) =>
+                                      Icon(
+                                    method["fallbackIcon"] as IconData,
+                                    color: isSelected
+                                        ? AppColors.primary
+                                        : AppColors.textSecondary,
+                                    size: 22,
+                                  ),
                                 ),
                                 const SizedBox(width: 12),
                                 Expanded(

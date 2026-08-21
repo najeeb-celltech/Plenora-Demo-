@@ -38,6 +38,12 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
     ),
   ];
 
+  @override
+  void dispose() {
+    _pageController.dispose();
+    super.dispose();
+  }
+
   void _onNext() {
     if (_currentPage < _slides.length - 1) {
       _pageController.nextPage(

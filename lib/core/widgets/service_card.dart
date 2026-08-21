@@ -74,113 +74,116 @@ class ServiceCard extends StatelessWidget {
   Widget build(BuildContext context) {
     if (isHorizontalCompact) {
       // Popular services card with full multi-line title visibility & compact Add to Service button
-      return Container(
-        margin: const EdgeInsets.only(bottom: 12),
-        padding: const EdgeInsets.all(12),
-        decoration: BoxDecoration(
-          color: AppColors.surface,
-          borderRadius: BorderRadius.circular(20),
-          boxShadow: const [
-            BoxShadow(
-              color: Color(0x0E000000),
-              blurRadius: 12,
-              offset: Offset(0, 3),
-            ),
-          ],
-        ),
-        child: Row(
-          crossAxisAlignment: CrossAxisAlignment.center,
-          children: [
-            // Exact 80x80 Image Container Box - Image scaled up slightly within bounds
-            ClipRRect(
-              borderRadius: BorderRadius.circular(16),
-              child: Container(
-                width: 80,
-                height: 80,
-                color: AppColors.primaryLight,
-                child: Transform.scale(
-                  scale: 1.15,
-                  child: _buildImageWidget(iconSize: 34),
+      return GestureDetector(
+        onTap: onViewDetails ?? onBookNow,
+        child: Container(
+          margin: const EdgeInsets.only(bottom: 12),
+          padding: const EdgeInsets.all(12),
+          decoration: BoxDecoration(
+            color: AppColors.surface,
+            borderRadius: BorderRadius.circular(20),
+            boxShadow: const [
+              BoxShadow(
+                color: Color(0x0E000000),
+                blurRadius: 12,
+                offset: Offset(0, 3),
+              ),
+            ],
+          ),
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              // Exact 80x80 Image Container Box - Image scaled up slightly within bounds
+              ClipRRect(
+                borderRadius: BorderRadius.circular(16),
+                child: Container(
+                  width: 80,
+                  height: 80,
+                  color: AppColors.primaryLight,
+                  child: Transform.scale(
+                    scale: 1.15,
+                    child: _buildImageWidget(iconSize: 34),
+                  ),
                 ),
               ),
-            ),
-            const SizedBox(width: 12),
-            // Info Column - Full multi-line service name visibility without truncation
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Text(
-                    title,
-                    style: AppTypography.titleMedium.copyWith(
-                      fontSize: 14.5,
-                      fontWeight: FontWeight.w700,
-                      height: 1.25,
+              const SizedBox(width: 12),
+              // Info Column - Full multi-line service name visibility without truncation
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text(
+                      title,
+                      style: AppTypography.titleMedium.copyWith(
+                        fontSize: 14.5,
+                        fontWeight: FontWeight.w700,
+                        height: 1.25,
+                      ),
+                      softWrap: true,
                     ),
-                    softWrap: true,
-                  ),
-                  const SizedBox(height: 4),
-                  Row(
-                    children: [
-                      const Icon(
-                        Icons.star_rounded,
-                        color: AppColors.starYellow,
-                        size: 15,
-                      ),
-                      const SizedBox(width: 3),
-                      Text(
-                        rating.toStringAsFixed(1),
-                        style:
-                            AppTypography.ratingText.copyWith(fontSize: 11.5),
-                      ),
-                      const SizedBox(width: 3),
-                      Flexible(
-                        child: Text(
-                          '• Verified',
-                          style: AppTypography.bodySmall.copyWith(
-                            color: AppColors.textSecondary,
-                            fontSize: 11,
+                    const SizedBox(height: 4),
+                    Row(
+                      children: [
+                        const Icon(
+                          Icons.star_rounded,
+                          color: AppColors.starYellow,
+                          size: 15,
+                        ),
+                        const SizedBox(width: 3),
+                        Text(
+                          rating.toStringAsFixed(1),
+                          style:
+                              AppTypography.ratingText.copyWith(fontSize: 11.5),
+                        ),
+                        const SizedBox(width: 3),
+                        Flexible(
+                          child: Text(
+                            '• Verified',
+                            style: AppTypography.bodySmall.copyWith(
+                              color: AppColors.textSecondary,
+                              fontSize: 11,
+                            ),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
                           ),
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 4),
+                    FittedBox(
+                      fit: BoxFit.scaleDown,
+                      alignment: Alignment.centerLeft,
+                      child: Text(
+                        'Starting $price',
+                        style: AppTypography.titleSmall.copyWith(
+                          color: AppColors.primary,
+                          fontWeight: FontWeight.w800,
+                          fontSize: 12.5,
                         ),
                       ),
-                    ],
-                  ),
-                  const SizedBox(height: 4),
-                  FittedBox(
-                    fit: BoxFit.scaleDown,
-                    alignment: Alignment.centerLeft,
-                    child: Text(
-                      'Starting $price',
-                      style: AppTypography.titleSmall.copyWith(
-                        color: AppColors.primary,
-                        fontWeight: FontWeight.w800,
-                        fontSize: 12.5,
-                      ),
                     ),
-                  ),
-                ],
-              ),
-            ),
-            const SizedBox(width: 8),
-            // Sleek & Slightly Larger Add to Service Button (Height 30dp, FittedBox scaled)
-            Flexible(
-              fit: FlexFit.loose,
-              child: FittedBox(
-                fit: BoxFit.scaleDown,
-                child: PrimaryButton(
-                  text: 'Add to Service',
-                  onPressed: () => _addToCart(context),
-                  height: 30,
-                  borderRadius: 15,
-                  padding: const EdgeInsets.symmetric(horizontal: 10),
-                  leadingIcon: Icons.add_shopping_cart_rounded,
+                  ],
                 ),
               ),
-            ),
-          ],
+              const SizedBox(width: 8),
+              // Sleek & Slightly Larger Add to Service Button (Height 30dp, FittedBox scaled)
+              Flexible(
+                fit: FlexFit.loose,
+                child: FittedBox(
+                  fit: BoxFit.scaleDown,
+                  child: PrimaryButton(
+                    text: 'Add to Service',
+                    onPressed: () => _addToCart(context),
+                    height: 30,
+                    borderRadius: 15,
+                    padding: const EdgeInsets.symmetric(horizontal: 10),
+                    leadingIcon: Icons.add_shopping_cart_rounded,
+                  ),
+                ),
+              ),
+            ],
+          ),
         ),
       );
     }

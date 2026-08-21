@@ -37,14 +37,18 @@ class FloatingNavBar extends StatelessWidget {
           return Row(
             mainAxisAlignment: MainAxisAlignment.spaceEvenly,
             children: [
-              _buildNavItem(0, Icons.home_rounded),
-              _buildNavItem(1, Icons.calendar_month_rounded),
+              _buildNavItem(
+                  0, "assets/icons/home-icon.png", Icons.home_rounded),
+              _buildNavItem(1, "assets/icons/mybookings-icon.png",
+                  Icons.calendar_month_rounded),
               _buildNavItem(
                 2,
+                "assets/icons/servicecart-icon.png",
                 Icons.shopping_bag_outlined,
                 badgeCount: cartCount,
               ),
-              _buildNavItem(3, Icons.person_outline_rounded),
+              _buildNavItem(
+                  3, "assets/icons/profile-icon.png", Icons.person_outline_rounded),
             ],
           );
         },
@@ -52,7 +56,8 @@ class FloatingNavBar extends StatelessWidget {
     );
   }
 
-  Widget _buildNavItem(int index, IconData icon, {int badgeCount = 0}) {
+  Widget _buildNavItem(int index, String assetPath, IconData fallbackIcon,
+      {int badgeCount = 0}) {
     final isSelected = currentIndex == index;
 
     return GestureDetector(
@@ -70,10 +75,21 @@ class FloatingNavBar extends StatelessWidget {
               color: isSelected ? AppColors.primary : Colors.transparent,
               shape: BoxShape.circle,
             ),
-            child: Icon(
-              icon,
-              size: 22,
-              color: isSelected ? AppColors.textWhite : AppColors.textSecondary,
+            child: Center(
+              child: Image.asset(
+                assetPath,
+                width: 22,
+                height: 22,
+                color:
+                    isSelected ? AppColors.textWhite : AppColors.textSecondary,
+                errorBuilder: (context, error, stackTrace) => Icon(
+                  fallbackIcon,
+                  size: 22,
+                  color: isSelected
+                      ? AppColors.textWhite
+                      : AppColors.textSecondary,
+                ),
+              ),
             ),
           ),
           if (badgeCount > 0)

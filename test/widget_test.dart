@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:plenora/core/services/cart_service.dart';
 import 'package:plenora/features/home/screens/home_screen.dart';
 import 'package:plenora/main.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -60,5 +61,40 @@ void main() {
     // Reset view
     tester.view.resetPhysicalSize();
     tester.view.resetDevicePixelRatio();
+  });
+
+  test('CartService unit tests for INR pricing, discounts, and item management', () {
+    CartService.clearCart();
+    expect(CartService.totalCount, 0);
+    expect(CartService.subtotalPrice, 0.0);
+    expect(CartService.totalPrice, 0.0);
+
+    // Format INR test
+    expect(CartService.formatInr(799), '₹799');
+    expect(CartService.formatInr(1499), '₹1,499');
+    expect(CartService.formatInr(25000), '₹25,000');
+
+    // Add service test
+    CartService.addService(
+      title: "Carpet Cleaning",
+      description: "Deep steam clean",
+      price: "₹799/hr",
+      rating: 4.9,
+      imageUrl: "assets/image/kitchen-service.png",
+    );
+    expect(CartService.totalCount, 1);
+    expect(CartService.subtotalPrice, 799.0);
+    expect(CartService.totalPrice, 799.0);
+
+    // Apply coupon test
+    final applied = CartService.applyCoupon("PLENORA10");
+    expect(applied, true);
+    expect(CartService.discountNotifier.value, 150.0);
+    expect(CartService.totalPrice, 649.0);
+
+    // Clear cart test
+    CartService.clearCart();
+    expect(CartService.totalCount, 0);
+    expect(CartService.totalPrice, 0.0);
   });
 }

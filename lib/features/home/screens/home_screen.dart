@@ -183,39 +183,50 @@ class _HomeScreenState extends State<HomeScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: AppColors.background,
-      extendBody: true,
-      body: SafeArea(
-        bottom: false,
-        child: IndexedStack(
-          index: _currentNavIndex,
-          children: [
-            _buildHomeContent(),
-            _buildBookingsTab(),
-            ServiceCartScreen(
-              onExploreServices: () {
+    return PopScope(
+      canPop: _currentNavIndex == 0,
+      onPopInvokedWithResult: (bool didPop, dynamic result) {
+        if (didPop) return;
+        if (_currentNavIndex != 0) {
+          setState(() {
+            _currentNavIndex = 0;
+          });
+        }
+      },
+      child: Scaffold(
+        backgroundColor: AppColors.background,
+        extendBody: true,
+        body: SafeArea(
+          bottom: false,
+          child: IndexedStack(
+            index: _currentNavIndex,
+            children: [
+              _buildHomeContent(),
+              _buildBookingsTab(),
+              ServiceCartScreen(
+                onExploreServices: () {
+                  setState(() {
+                    _currentNavIndex = 0;
+                  });
+                },
+              ),
+              _buildProfileTab(),
+            ],
+          ),
+        ),
+        bottomNavigationBar: SafeArea(
+          child: Container(
+            padding: const EdgeInsets.fromLTRB(24, 0, 24, 12),
+            alignment: Alignment.bottomCenter,
+            height: 76,
+            child: FloatingNavBar(
+              currentIndex: _currentNavIndex,
+              onTap: (index) {
                 setState(() {
-                  _currentNavIndex = 0;
+                  _currentNavIndex = index;
                 });
               },
             ),
-            _buildProfileTab(),
-          ],
-        ),
-      ),
-      bottomNavigationBar: SafeArea(
-        child: Container(
-          padding: const EdgeInsets.fromLTRB(24, 0, 24, 12),
-          alignment: Alignment.bottomCenter,
-          height: 76,
-          child: FloatingNavBar(
-            currentIndex: _currentNavIndex,
-            onTap: (index) {
-              setState(() {
-                _currentNavIndex = index;
-              });
-            },
           ),
         ),
       ),
@@ -291,10 +302,17 @@ class _HomeScreenState extends State<HomeScreen> {
                   child: Stack(
                     alignment: Alignment.center,
                     children: [
-                      const Icon(
-                        Icons.notifications_none_rounded,
+                      Image.asset(
+                        "assets/icons/notifications-icon.png",
+                        width: 22,
+                        height: 22,
                         color: AppColors.textPrimary,
-                        size: 22,
+                        errorBuilder: (context, error, stackTrace) =>
+                            const Icon(
+                          Icons.notifications_none_rounded,
+                          color: AppColors.textPrimary,
+                          size: 22,
+                        ),
                       ),
                       if (hasUnread)
                         Positioned(
@@ -731,11 +749,13 @@ class _HomeScreenState extends State<HomeScreen> {
             ...filteredServices.map((service) {
               return ServiceCard(
                 title: service["title"],
+                description: service["description"] ?? "",
                 price: service["price"],
                 rating: service["rating"],
                 imageUrl: service["imageUrl"],
                 isHorizontalCompact: true,
                 onBookNow: () => _openServiceModal(service),
+                onViewDetails: () => _openServiceModal(service),
               );
             }),
         ],
@@ -1790,7 +1810,8 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   Widget _buildSettingsTile({
-    required IconData icon,
+    String? assetIcon,
+    IconData? icon,
     required String title,
     String? subtitle,
     VoidCallback? onTap,
@@ -1810,7 +1831,20 @@ class _HomeScreenState extends State<HomeScreen> {
             color: iconColor.withValues(alpha: 0.1),
             borderRadius: BorderRadius.circular(12),
           ),
-          child: Icon(icon, color: iconColor, size: 20),
+          child: assetIcon != null
+              ? Center(
+                  child: Image.asset(
+                    assetIcon,
+                    width: 20,
+                    height: 20,
+                    color: iconColor,
+                    errorBuilder: (context, error, stackTrace) => Icon(
+                        icon ?? Icons.settings_rounded,
+                        color: iconColor,
+                        size: 20),
+                  ),
+                )
+              : Icon(icon, color: iconColor, size: 20),
         ),
         title: Text(
           title,
@@ -1830,10 +1864,10 @@ class _HomeScreenState extends State<HomeScreen> {
               )
             : null,
         trailing: showChevron
-            ? Icon(
+            ? const Icon(
                 Icons.chevron_right_rounded,
                 color: AppColors.textMuted,
-                size: 22,
+                size: 20,
               )
             : null,
       ),
@@ -1845,17 +1879,16 @@ class _HomeScreenState extends State<HomeScreen> {
     required List<Widget> children,
   }) {
     return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.all(20),
-      margin: const EdgeInsets.only(bottom: 20),
+      margin: const EdgeInsets.only(bottom: 16),
+      padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         color: AppColors.surface,
-        borderRadius: BorderRadius.circular(24),
+        borderRadius: BorderRadius.circular(20),
         boxShadow: const [
           BoxShadow(
             color: Color(0x0C000000),
-            blurRadius: 12,
-            offset: Offset(0, 3),
+            blurRadius: 10,
+            offset: Offset(0, 2),
           ),
         ],
       ),
@@ -1865,8 +1898,8 @@ class _HomeScreenState extends State<HomeScreen> {
           Text(
             sectionTitle,
             style: AppTypography.titleMedium.copyWith(
-              fontWeight: FontWeight.w800,
-              fontSize: 16,
+              fontWeight: FontWeight.w700,
+              color: AppColors.textPrimary,
             ),
           ),
           const SizedBox(height: 8),
@@ -1878,35 +1911,48 @@ class _HomeScreenState extends State<HomeScreen> {
 
   Widget _buildProfileTab() {
     return SingleChildScrollView(
-      physics: const BouncingScrollPhysics(),
-      padding: const EdgeInsets.fromLTRB(20, 20, 20, 120),
+      padding: const EdgeInsets.fromLTRB(20, 16, 20, 100),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text("Profile & Settings", style: AppTypography.headlineLarge),
-          const SizedBox(height: 20),
+          const SizedBox(height: 16),
 
-          // 1. Profile Section Card
+          // 1. Profile Header Card
           Container(
-            padding: const EdgeInsets.all(20),
-            margin: const EdgeInsets.only(bottom: 20),
+            padding: const EdgeInsets.all(18),
             decoration: BoxDecoration(
               color: AppColors.surface,
-              borderRadius: BorderRadius.circular(24),
+              borderRadius: BorderRadius.circular(20),
               boxShadow: const [
                 BoxShadow(
                   color: Color(0x0C000000),
-                  blurRadius: 12,
-                  offset: Offset(0, 3),
+                  blurRadius: 10,
+                  offset: Offset(0, 2),
                 ),
               ],
             ),
             child: Row(
               children: [
-                const CircleAvatar(
-                  radius: 34,
-                  backgroundImage: NetworkImage(
-                    "https://images.unsplash.com/photo-1534528741775-53994a69daeb?q=80&w=200&auto=format&fit=crop",
+                Container(
+                  width: 58,
+                  height: 58,
+                  decoration: const BoxDecoration(
+                    color: AppColors.primaryLight,
+                    shape: BoxShape.circle,
+                  ),
+                  child: Center(
+                    child: Image.asset(
+                      "assets/icons/profile-icon.png",
+                      width: 32,
+                      height: 32,
+                      color: AppColors.primary,
+                      errorBuilder: (context, error, stackTrace) => const Icon(
+                        Icons.person_rounded,
+                        color: AppColors.primary,
+                        size: 32,
+                      ),
+                    ),
                   ),
                 ),
                 const SizedBox(width: 14),
@@ -1938,12 +1984,14 @@ class _HomeScreenState extends State<HomeScreen> {
               ],
             ),
           ),
+          const SizedBox(height: 16),
 
           // 2. Account Section
           _buildSettingsSectionCard(
             sectionTitle: "Account",
             children: [
               _buildSettingsTile(
+                assetIcon: "assets/icons/mybookings-icon.png",
                 icon: Icons.calendar_month_outlined,
                 title: "My Bookings",
                 subtitle: "View and track scheduled services",
@@ -1951,6 +1999,7 @@ class _HomeScreenState extends State<HomeScreen> {
               ),
               const Divider(height: 1, indent: 52),
               _buildSettingsTile(
+                assetIcon: "assets/icons/addresses-icon.png",
                 icon: Icons.location_on_outlined,
                 title: "Saved Addresses",
                 subtitle: "Manage home & office service locations",
@@ -1961,6 +2010,7 @@ class _HomeScreenState extends State<HomeScreen> {
               ),
               const Divider(height: 1, indent: 52),
               _buildSettingsTile(
+                assetIcon: "assets/icons/paymentmethods-icon.png",
                 icon: Icons.payment_outlined,
                 title: "Payment Methods",
                 subtitle: "Manage saved cards & payment options",
@@ -1977,6 +2027,7 @@ class _HomeScreenState extends State<HomeScreen> {
             sectionTitle: "Support",
             children: [
               _buildSettingsTile(
+                assetIcon: "assets/icons/help_support-icon.png",
                 icon: Icons.help_outline_rounded,
                 title: "Help & Support",
                 subtitle: "24/7 customer assistant & active ticket resolution",
@@ -1987,6 +2038,7 @@ class _HomeScreenState extends State<HomeScreen> {
               ),
               const Divider(height: 1, indent: 52),
               _buildSettingsTile(
+                assetIcon: "assets/icons/contact_us-icon.png",
                 icon: Icons.mail_outline_rounded,
                 title: "Contact Us",
                 subtitle: "Email support@plenora.com or call +1 800-555-PLENORA",
@@ -1995,7 +2047,9 @@ class _HomeScreenState extends State<HomeScreen> {
                   "Email: support@plenora.com\nPhone: +1 800 555-PLENORA\nHours: Mon - Sun (8:00 AM - 10:00 PM)",
                 ),
               ),
+              const Divider(height: 1, indent: 52),
               _buildSettingsTile(
+                assetIcon: "assets/icons/faq-icon.png",
                 icon: Icons.question_answer_outlined,
                 title: "Frequently Asked Questions",
                 subtitle: "Answers to common questions about services & pricing",
@@ -2009,6 +2063,7 @@ class _HomeScreenState extends State<HomeScreen> {
             sectionTitle: "Legal",
             children: [
               _buildSettingsTile(
+                assetIcon: "assets/icons/terms_conditions-icon.png",
                 icon: Icons.description_outlined,
                 title: "Terms & Conditions",
                 subtitle: "Read our comprehensive terms of service agreement",
@@ -2020,6 +2075,7 @@ class _HomeScreenState extends State<HomeScreen> {
               ),
               const Divider(height: 1, indent: 52),
               _buildSettingsTile(
+                assetIcon: "assets/icons/privacy_policy-icon.png",
                 icon: Icons.privacy_tip_outlined,
                 title: "Privacy Policy",
                 subtitle: "Learn how we protect and process your personal data",
@@ -2031,6 +2087,7 @@ class _HomeScreenState extends State<HomeScreen> {
               ),
               const Divider(height: 1, indent: 52),
               _buildSettingsTile(
+                assetIcon: "assets/icons/about-icon.png",
                 icon: Icons.info_outline_rounded,
                 title: "About Plenora",
                 subtitle: "Version 1.2.4 (Build 2026)",
@@ -2047,6 +2104,7 @@ class _HomeScreenState extends State<HomeScreen> {
             sectionTitle: "Account Actions",
             children: [
               _buildSettingsTile(
+                assetIcon: "assets/icons/logout-icon.png",
                 icon: Icons.logout_rounded,
                 title: "Log Out",
                 subtitle: "Sign out of your Plenora account",
@@ -2057,6 +2115,7 @@ class _HomeScreenState extends State<HomeScreen> {
               ),
               const Divider(height: 1, indent: 52),
               _buildSettingsTile(
+                assetIcon: "assets/icons/delete_account-icon.png",
                 icon: Icons.delete_forever_rounded,
                 title: "Delete Account",
                 subtitle: "Permanently delete account and all data",
