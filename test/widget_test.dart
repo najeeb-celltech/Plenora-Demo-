@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:plenora/core/services/cart_service.dart';
+import 'package:plenora/core/widgets/custom_input_field.dart';
+import 'package:plenora/features/auth/screens/login_screen.dart';
+import 'package:plenora/features/auth/screens/signup_screen.dart';
 import 'package:plenora/features/home/screens/home_screen.dart';
 import 'package:plenora/main.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -96,5 +99,149 @@ void main() {
     CartService.clearCart();
     expect(CartService.totalCount, 0);
     expect(CartService.totalPrice, 0.0);
+  });
+
+  testWidgets('SignUpScreen validation displays inline messages without layout overflow',
+      (WidgetTester tester) async {
+    tester.view.physicalSize = const Size(375, 812);
+    tester.view.devicePixelRatio = 1.0;
+
+    await tester.pumpWidget(
+      const MaterialApp(
+        home: SignUpScreen(),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    // Verify initial state - no errors
+    expect(find.text('Please enter your name'), findsNothing);
+    expect(find.text('Please enter your email'), findsNothing);
+    expect(find.text('Please enter your password'), findsNothing);
+
+    // Tap "Sign Up" button with empty fields
+    await tester.tap(find.text('Sign Up'));
+    await tester.pumpAndSettle();
+
+    // Verify validation errors appear
+    expect(find.text('Please enter your name'), findsOneWidget);
+    expect(find.text('Please enter your email'), findsOneWidget);
+    expect(find.text('Please enter your password'), findsOneWidget);
+
+    // Test entering text clears the name error
+    await tester.enterText(find.byType(TextField).at(0), 'Jane Doe');
+    await tester.pumpAndSettle();
+    expect(find.text('Please enter your name'), findsNothing);
+
+    tester.view.resetPhysicalSize();
+    tester.view.resetDevicePixelRatio();
+  });
+
+  testWidgets('LoginScreen validation displays inline messages without layout overflow',
+      (WidgetTester tester) async {
+    tester.view.physicalSize = const Size(375, 812);
+    tester.view.devicePixelRatio = 1.0;
+
+    await tester.pumpWidget(
+      const MaterialApp(
+        home: LoginScreen(),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    // Verify initial state - no errors
+    expect(find.text('Please enter your email'), findsNothing);
+    expect(find.text('Please enter your password'), findsNothing);
+
+    // Tap "Login" button with empty fields
+    await tester.tap(find.text('Login'));
+    await tester.pumpAndSettle();
+
+    // Verify validation errors appear
+    expect(find.text('Please enter your email'), findsOneWidget);
+    expect(find.text('Please enter your password'), findsOneWidget);
+
+    // Test invalid email validation
+    await tester.enterText(find.byType(TextField).at(0), 'invalidemail');
+    await tester.tap(find.text('Login'));
+    await tester.pumpAndSettle();
+    expect(find.text('Please enter a valid email'), findsOneWidget);
+
+    tester.view.resetPhysicalSize();
+    tester.view.resetDevicePixelRatio();
+  });
+
+  testWidgets('Auth screens responsiveness with error messages on small (320px) screens',
+      (WidgetTester tester) async {
+    tester.view.physicalSize = const Size(320, 568);
+    tester.view.devicePixelRatio = 1.0;
+
+    // Test SignUp with errors on 320px
+    await tester.pumpWidget(
+      const MaterialApp(
+        home: SignUpScreen(),
+      ),
+    );
+    await tester.pumpAndSettle();
+    await tester.ensureVisible(find.text('Sign Up'));
+    await tester.tap(find.text('Sign Up'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Please enter your name'), findsOneWidget);
+    expect(tester.takeException(), isNull);
+
+    // Test Login with errors on 320px
+    await tester.pumpWidget(
+      const MaterialApp(
+        home: LoginScreen(),
+      ),
+    );
+    await tester.pumpAndSettle();
+    await tester.ensureVisible(find.text('Login'));
+    await tester.tap(find.text('Login'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Please enter your email'), findsOneWidget);
+    expect(tester.takeException(), isNull);
+
+    tester.view.resetPhysicalSize();
+    tester.view.resetDevicePixelRatio();
+  });
+
+  testWidgets('Input fields maintain exact fixed height without layout shift when errors appear',
+      (WidgetTester tester) async {
+    tester.view.physicalSize = const Size(375, 812);
+    tester.view.devicePixelRatio = 1.0;
+
+    await tester.pumpWidget(
+      const MaterialApp(
+        home: SignUpScreen(),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    // Measure height of all 3 CustomInputField widgets before error
+    final fieldFinder = find.byType(CustomInputField);
+    expect(fieldFinder, findsNWidgets(3));
+
+    final sizeBefore0 = tester.getSize(fieldFinder.at(0));
+    final sizeBefore1 = tester.getSize(fieldFinder.at(1));
+    final sizeBefore2 = tester.getSize(fieldFinder.at(2));
+
+    // Tap "Sign Up" to trigger validation errors
+    await tester.tap(find.text('Sign Up'));
+    await tester.pumpAndSettle();
+
+    // Measure height of all 3 CustomInputField widgets after error
+    final sizeAfter0 = tester.getSize(fieldFinder.at(0));
+    final sizeAfter1 = tester.getSize(fieldFinder.at(1));
+    final sizeAfter2 = tester.getSize(fieldFinder.at(2));
+
+    // Height should be identical (0px layout shift)
+    expect(sizeAfter0.height, equals(sizeBefore0.height));
+    expect(sizeAfter1.height, equals(sizeBefore1.height));
+    expect(sizeAfter2.height, equals(sizeBefore2.height));
+
+    tester.view.resetPhysicalSize();
+    tester.view.resetDevicePixelRatio();
   });
 }

@@ -152,9 +152,10 @@ class _SignUpScreenState extends State<SignUpScreen> {
                                 label: "Full Name",
                                 hintText: "Enter your full name",
                                 controller: _nameController,
+                                textInputAction: TextInputAction.next,
                                 validator: (value) {
                                   if (value == null || value.trim().isEmpty) {
-                                    return "Full name is required";
+                                    return "Please enter your name";
                                   }
                                   return null;
                                 },
@@ -167,14 +168,15 @@ class _SignUpScreenState extends State<SignUpScreen> {
                                 hintText: "Enter your email address",
                                 controller: _emailController,
                                 keyboardType: TextInputType.emailAddress,
+                                textInputAction: TextInputAction.next,
                                 validator: (value) {
                                   if (value == null || value.trim().isEmpty) {
-                                    return "Email address is required";
+                                    return "Please enter your email";
                                   }
                                   final emailRegex = RegExp(
                                       r"^[a-zA-Z0-9.a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9]+\.[a-zA-Z]+");
                                   if (!emailRegex.hasMatch(value.trim())) {
-                                    return "Please enter a valid email address";
+                                    return "Please enter a valid email";
                                   }
                                   return null;
                                 },
@@ -187,9 +189,11 @@ class _SignUpScreenState extends State<SignUpScreen> {
                                 hintText: "Enter your password",
                                 controller: _passwordController,
                                 isPassword: true,
+                                textInputAction: TextInputAction.done,
+                                onFieldSubmitted: (_) => _handleSignUp(),
                                 validator: (value) {
                                   if (value == null || value.isEmpty) {
-                                    return "Password is required";
+                                    return "Please enter your password";
                                   }
                                   if (value.length < 6) {
                                     return "Password must be at least 6 characters";
@@ -213,8 +217,9 @@ class _SignUpScreenState extends State<SignUpScreen> {
                               const SizedBox(height: 16),
 
                               // Clean Account Switch Link
-                              Row(
-                                mainAxisAlignment: MainAxisAlignment.center,
+                              Wrap(
+                                alignment: WrapAlignment.center,
+                                crossAxisAlignment: WrapCrossAlignment.center,
                                 children: [
                                   Text(
                                     "Already have an account? ",

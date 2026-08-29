@@ -26,4 +26,6 @@ class AppColors {
   static const Color border = Color(0xFFE2E9E5);         // Soft Card Border
   static const Color inputBackground = Color(0xFFFFFFFF);
   static const Color shadowColor = Color(0x0C000000);   // Soft Ambient Shadow
+  static const Color error = Color(0xFFDC2626);         // Clean Crimson Red for Validation
+  static const Color errorLight = Color(0xFFFEF2F2);    // Soft Error Tint
 }
