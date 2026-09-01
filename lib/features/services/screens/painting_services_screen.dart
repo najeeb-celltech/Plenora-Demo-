@@ -14,7 +14,12 @@ class PaintingServicesScreen extends StatefulWidget {
 class _PaintingServicesScreenState extends State<PaintingServicesScreen> {
   int _selectedFilterIndex = 0;
 
-  final List<String> _filters = const ["All", "Top Rated", "Interior", "Exterior"];
+  final List<String> _filters = const [
+    "All",
+    "Top Rated",
+    "Interior",
+    "Exterior"
+  ];
 
   final List<Map<String, dynamic>> _professionals = const [
     {
@@ -25,6 +30,7 @@ class _PaintingServicesScreenState extends State<PaintingServicesScreen> {
       "rating": 4.9,
       "imageUrl":
           "https://images.unsplash.com/photo-1562259949-e8e7689d7828?q=80&w=400&auto=format&fit=crop",
+      "tags": ["Interior", "Top Rated", "Under ₹999"],
     },
     {
       "title": "Exterior Wall Coating",
@@ -34,6 +40,7 @@ class _PaintingServicesScreenState extends State<PaintingServicesScreen> {
       "rating": 4.8,
       "imageUrl":
           "https://images.unsplash.com/photo-1589939705384-5185137a7f0f?q=80&w=400&auto=format&fit=crop",
+      "tags": ["Exterior", "Wall"],
     },
     {
       "title": "Accent Wall Design",
@@ -43,6 +50,7 @@ class _PaintingServicesScreenState extends State<PaintingServicesScreen> {
       "rating": 5.0,
       "imageUrl":
           "https://images.unsplash.com/photo-1513694203232-719a280e022f?q=80&w=400&auto=format&fit=crop",
+      "tags": ["Interior", "Top Rated", "Under ₹999"],
     },
     {
       "title": "Cabinet & Wood Polishing",
@@ -52,8 +60,77 @@ class _PaintingServicesScreenState extends State<PaintingServicesScreen> {
       "rating": 4.7,
       "imageUrl":
           "https://images.unsplash.com/photo-1538688525198-9b88f6f53126?q=80&w=400&auto=format&fit=crop",
+      "tags": ["Interior", "Under ₹999", "Wood"],
+    },
+    {
+      "title": "Weatherproof Terrace Paint",
+      "description":
+          "Waterproof elastomeric wall coatings, UV heat protection, and anti-fungal barrier.",
+      "price": "₹1,199/hr",
+      "rating": 4.9,
+      "imageUrl":
+          "https://images.unsplash.com/photo-1595846519845-68e298c2edd8?q=80&w=400&auto=format&fit=crop",
+      "tags": ["Exterior", "Top Rated", "Waterproof"],
     },
   ];
+
+  List<Map<String, dynamic>> get _filteredProfessionals {
+    if (_selectedFilterIndex >= _filters.length) return _professionals;
+    final selectedFilter = _filters[_selectedFilterIndex].trim();
+
+    if (selectedFilter.toLowerCase() == "all") {
+      return _professionals;
+    }
+
+    if (selectedFilter.toLowerCase() == "top rated") {
+      final list = _professionals.where((service) {
+        final rating = (service["rating"] as num?)?.toDouble() ?? 0.0;
+        return rating >= 4.9;
+      }).toList();
+      list.sort((a, b) => ((b["rating"] as num?)?.toDouble() ?? 0.0)
+          .compareTo((a["rating"] as num?)?.toDouble() ?? 0.0));
+      return list;
+    }
+
+    // Dynamic price match: e.g. "Under ₹999", "Under ₹30", "Under ₹1000", "< ₹999"
+    final priceFilterRegex =
+        RegExp(r'under\s*([₹$€£]?\s*[\d,]+)', caseSensitive: false);
+    final match = priceFilterRegex.firstMatch(selectedFilter);
+    if (match != null) {
+      final numStr = match.group(1)!.replaceAll(RegExp(r'[^\d.]'), '');
+      final threshold = double.tryParse(numStr);
+      if (threshold != null) {
+        return _professionals.where((service) {
+          final priceStr = service["price"]?.toString() ?? '';
+          final cleanPrice = priceStr.replaceAll(RegExp(r'[^\d.]'), '');
+          final priceVal = double.tryParse(cleanPrice);
+          if (priceVal != null) {
+            return priceVal <= threshold;
+          }
+          return false;
+        }).toList();
+      }
+    }
+
+    // Category / Tag / Keyword matching
+    final filterLower = selectedFilter.toLowerCase();
+    return _professionals.where((service) {
+      final tags = (service["tags"] as List<dynamic>?)
+              ?.map((t) => t.toString().toLowerCase())
+              .toList() ??
+          [];
+      if (tags.contains(filterLower)) return true;
+
+      final title = (service["title"]?.toString() ?? '').toLowerCase();
+      final description =
+          (service["description"]?.toString() ?? '').toLowerCase();
+      if (title.contains(filterLower) || description.contains(filterLower)) {
+        return true;
+      }
+
+      return false;
+    }).toList();
+  }
 
   void _openServiceModal(Map<String, dynamic> service) {
     showModalBottomSheet(
@@ -72,6 +149,8 @@ class _PaintingServicesScreenState extends State<PaintingServicesScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final displayedServices = _filteredProfessionals;
+
     return Scaffold(
       backgroundColor: AppColors.background,
       body: SafeArea(
@@ -202,7 +281,9 @@ class _PaintingServicesScreenState extends State<PaintingServicesScreen> {
                       ),
                       const SizedBox(height: 2),
                       Text(
-                        "16 Verified pros available today",
+                        _selectedFilterIndex == 0
+                            ? "16 Verified pros available today"
+                            : "${displayedServices.length} pros available for \"${_filters[_selectedFilterIndex]}\"",
                         style: AppTypography.bodySmall.copyWith(
                           color: AppColors.textSecondary,
                         ),
@@ -212,18 +293,82 @@ class _PaintingServicesScreenState extends State<PaintingServicesScreen> {
 
                   const SizedBox(height: 16),
 
-                  // Cards List (Full Borderless Cards)
-                  ..._professionals.map((service) {
-                    return ServiceCard(
-                      title: service["title"],
-                      description: service["description"],
-                      price: service["price"],
-                      rating: service["rating"],
-                      imageUrl: service["imageUrl"],
-                      onBookNow: () => _openServiceModal(service),
-                      onViewDetails: () => _openServiceModal(service),
-                    );
-                  }),
+                  // Cards List or Empty State
+                  if (displayedServices.isEmpty)
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                          vertical: 40, horizontal: 20),
+                      alignment: Alignment.center,
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Container(
+                            width: 72,
+                            height: 72,
+                            decoration: BoxDecoration(
+                              color: AppColors.primary.withValues(alpha: 0.1),
+                              shape: BoxShape.circle,
+                            ),
+                            child: const Icon(
+                              Icons.search_off_rounded,
+                              color: AppColors.primary,
+                              size: 36,
+                            ),
+                          ),
+                          const SizedBox(height: 16),
+                          Text(
+                            "No services found",
+                            style: AppTypography.titleMedium.copyWith(
+                              fontSize: 18,
+                              fontWeight: FontWeight.w700,
+                            ),
+                          ),
+                          const SizedBox(height: 6),
+                          Text(
+                            "No services match the \"${_filters[_selectedFilterIndex]}\" filter.",
+                            textAlign: TextAlign.center,
+                            style: AppTypography.bodySmall.copyWith(
+                              color: AppColors.textSecondary,
+                            ),
+                          ),
+                          const SizedBox(height: 16),
+                          GestureDetector(
+                            onTap: () {
+                              setState(() {
+                                _selectedFilterIndex = 0;
+                              });
+                            },
+                            child: Container(
+                              padding: const EdgeInsets.symmetric(
+                                  horizontal: 20, vertical: 10),
+                              decoration: BoxDecoration(
+                                color: AppColors.primary,
+                                borderRadius: BorderRadius.circular(20),
+                              ),
+                              child: Text(
+                                "Show All Services",
+                                style: AppTypography.chipText.copyWith(
+                                  color: AppColors.textWhite,
+                                  fontWeight: FontWeight.w700,
+                                ),
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    )
+                  else
+                    ...displayedServices.map((service) {
+                      return ServiceCard(
+                        title: service["title"],
+                        description: service["description"],
+                        price: service["price"],
+                        rating: service["rating"],
+                        imageUrl: service["imageUrl"],
+                        onBookNow: () => _openServiceModal(service),
+                        onViewDetails: () => _openServiceModal(service),
+                      );
+                    }),
 
                   const SizedBox(height: 20),
                 ],

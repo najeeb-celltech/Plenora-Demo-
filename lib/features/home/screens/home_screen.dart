@@ -1268,18 +1268,10 @@ class _HomeScreenState extends State<HomeScreen> {
         content: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Container(
-              width: 64,
-              height: 64,
-              decoration: const BoxDecoration(
-                color: Color(0xFFFFF0F0),
-                shape: BoxShape.circle,
-              ),
-              child: const Icon(
-                Icons.logout_rounded,
-                color: Colors.redAccent,
-                size: 36,
-              ),
+            const Icon(
+              Icons.logout_rounded,
+              color: Colors.redAccent,
+              size: 48,
             ),
             const SizedBox(height: 16),
             Text(
@@ -1368,18 +1360,10 @@ class _HomeScreenState extends State<HomeScreen> {
         content: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Container(
-              width: 64,
-              height: 64,
-              decoration: const BoxDecoration(
-                color: Color(0xFFFFF0F0),
-                shape: BoxShape.circle,
-              ),
-              child: const Icon(
-                Icons.delete_forever_rounded,
-                color: Colors.redAccent,
-                size: 36,
-              ),
+            const Icon(
+              Icons.delete_forever_rounded,
+              color: Colors.redAccent,
+              size: 48,
             ),
             const SizedBox(height: 16),
             Text(
@@ -1824,28 +1808,26 @@ class _HomeScreenState extends State<HomeScreen> {
       child: ListTile(
         onTap: onTap,
         contentPadding: EdgeInsets.zero,
-        leading: Container(
-          width: 40,
-          height: 40,
-          decoration: BoxDecoration(
-            color: iconColor.withValues(alpha: 0.1),
-            borderRadius: BorderRadius.circular(12),
-          ),
-          child: assetIcon != null
-              ? Center(
-                  child: Image.asset(
+        leading: SizedBox(
+          width: 26,
+          height: 26,
+          child: Center(
+            child: assetIcon != null
+                ? Image.asset(
                     assetIcon,
-                    width: 20,
-                    height: 20,
+                    width: 22,
+                    height: 22,
                     color: iconColor,
                     errorBuilder: (context, error, stackTrace) => Icon(
                         icon ?? Icons.settings_rounded,
                         color: iconColor,
-                        size: 20),
-                  ),
-                )
-              : Icon(icon, color: iconColor, size: 20),
+                        size: 22),
+                  )
+                : Icon(icon ?? Icons.settings_rounded,
+                    color: iconColor, size: 22),
+          ),
         ),
+        minLeadingWidth: 26,
         title: Text(
           title,
           style: AppTypography.titleMedium.copyWith(
@@ -1934,23 +1916,19 @@ class _HomeScreenState extends State<HomeScreen> {
             ),
             child: Row(
               children: [
-                Container(
-                  width: 58,
-                  height: 58,
-                  decoration: const BoxDecoration(
-                    color: AppColors.primaryLight,
-                    shape: BoxShape.circle,
-                  ),
+                SizedBox(
+                  width: 44,
+                  height: 44,
                   child: Center(
                     child: Image.asset(
                       "assets/icons/profile-icon.png",
-                      width: 32,
-                      height: 32,
+                      width: 40,
+                      height: 40,
                       color: AppColors.primary,
                       errorBuilder: (context, error, stackTrace) => const Icon(
                         Icons.person_rounded,
                         color: AppColors.primary,
-                        size: 32,
+                        size: 40,
                       ),
                     ),
                   ),
@@ -1997,7 +1975,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 subtitle: "View and track scheduled services",
                 onTap: () => setState(() => _currentNavIndex = 1),
               ),
-              const Divider(height: 1, indent: 52),
+              const Divider(height: 1, indent: 38),
               _buildSettingsTile(
                 assetIcon: "assets/icons/addresses-icon.png",
                 icon: Icons.location_on_outlined,
@@ -2008,7 +1986,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   "1. Home Address: 124 Green Park, Block B, New Delhi\n2. Office Address: Tower 4, Cyber City, Sector 24",
                 ),
               ),
-              const Divider(height: 1, indent: 52),
+              const Divider(height: 1, indent: 38),
               _buildSettingsTile(
                 assetIcon: "assets/icons/paymentmethods-icon.png",
                 icon: Icons.payment_outlined,
@@ -2036,7 +2014,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   "Need assistance with a booking or technician? Our support team is available 24/7 to resolve any issues.",
                 ),
               ),
-              const Divider(height: 1, indent: 52),
+              const Divider(height: 1, indent: 38),
               _buildSettingsTile(
                 assetIcon: "assets/icons/contact_us-icon.png",
                 icon: Icons.mail_outline_rounded,
@@ -2047,7 +2025,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   "Email: support@plenora.com\nPhone: +1 800 555-PLENORA\nHours: Mon - Sun (8:00 AM - 10:00 PM)",
                 ),
               ),
-              const Divider(height: 1, indent: 52),
+              const Divider(height: 1, indent: 38),
               _buildSettingsTile(
                 assetIcon: "assets/icons/faq-icon.png",
                 icon: Icons.question_answer_outlined,
@@ -2073,7 +2051,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   fullText: _termsFullText,
                 ),
               ),
-              const Divider(height: 1, indent: 52),
+              const Divider(height: 1, indent: 38),
               _buildSettingsTile(
                 assetIcon: "assets/icons/privacy_policy-icon.png",
                 icon: Icons.privacy_tip_outlined,
@@ -2085,7 +2063,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   fullText: _privacyFullText,
                 ),
               ),
-              const Divider(height: 1, indent: 52),
+              const Divider(height: 1, indent: 38),
               _buildSettingsTile(
                 assetIcon: "assets/icons/about-icon.png",
                 icon: Icons.info_outline_rounded,
@@ -2113,7 +2091,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 showChevron: false,
                 onTap: _showLogoutConfirmation,
               ),
-              const Divider(height: 1, indent: 52),
+              const Divider(height: 1, indent: 38),
               _buildSettingsTile(
                 assetIcon: "assets/icons/delete_account-icon.png",
                 icon: Icons.delete_forever_rounded,

@@ -5,6 +5,10 @@ import 'package:plenora/core/widgets/custom_input_field.dart';
 import 'package:plenora/features/auth/screens/login_screen.dart';
 import 'package:plenora/features/auth/screens/signup_screen.dart';
 import 'package:plenora/features/home/screens/home_screen.dart';
+import 'package:plenora/features/services/screens/cleaning_services_screen.dart';
+import 'package:plenora/features/services/screens/electrical_services_screen.dart';
+import 'package:plenora/features/services/screens/painting_services_screen.dart';
+import 'package:plenora/features/services/screens/appliance_services_screen.dart';
 import 'package:plenora/main.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -240,6 +244,220 @@ void main() {
     expect(sizeAfter0.height, equals(sizeBefore0.height));
     expect(sizeAfter1.height, equals(sizeBefore1.height));
     expect(sizeAfter2.height, equals(sizeBefore2.height));
+
+    tester.view.resetPhysicalSize();
+    tester.view.resetDevicePixelRatio();
+  });
+
+  testWidgets('CleaningServicesScreen filters services correctly on tap',
+      (WidgetTester tester) async {
+    tester.view.physicalSize = const Size(600, 2000);
+    tester.view.devicePixelRatio = 1.0;
+
+    await tester.pumpWidget(
+      const MaterialApp(
+        home: CleaningServicesScreen(),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    // Initial state: "All" selected -> all 5 services displayed
+    expect(find.text('Kitchen Sparkle Service'), findsOneWidget);
+    expect(find.text('Bathroom Cleaning'), findsOneWidget);
+    expect(find.text('Carpet Cleaning'), findsOneWidget);
+    expect(find.text('Full House Deep Sanitation'), findsOneWidget);
+    expect(find.text('Window & Glass Restoration'), findsOneWidget);
+
+    // Tap "Top Rated" filter
+    await tester.tap(find.text('Top Rated'));
+    await tester.pumpAndSettle();
+    expect(find.text('Bathroom Cleaning'), findsOneWidget);
+    expect(find.text('Carpet Cleaning'), findsOneWidget);
+    expect(find.text('Full House Deep Sanitation'), findsOneWidget);
+    expect(find.text('Kitchen Sparkle Service'), findsNothing);
+
+    // Tap "Under ₹999" filter
+    await tester.tap(find.text('Under ₹999'));
+    await tester.pumpAndSettle();
+    expect(find.text('Bathroom Cleaning'), findsOneWidget);
+    expect(find.text('Carpet Cleaning'), findsOneWidget);
+    expect(find.text('Kitchen Sparkle Service'), findsOneWidget);
+    expect(find.text('Window & Glass Restoration'), findsOneWidget);
+    expect(find.text('Full House Deep Sanitation'), findsNothing);
+
+    // Tap "Nearby" filter
+    await tester.tap(find.text('Nearby'));
+    await tester.pumpAndSettle();
+    expect(find.text('Kitchen Sparkle Service'), findsOneWidget);
+    expect(find.text('Bathroom Cleaning'), findsOneWidget);
+    expect(find.text('Window & Glass Restoration'), findsOneWidget);
+    expect(find.text('Full House Deep Sanitation'), findsNothing);
+
+    // Tap "All" filter to restore all services
+    await tester.tap(find.text('All'));
+    await tester.pumpAndSettle();
+    expect(find.text('Full House Deep Sanitation'), findsOneWidget);
+    expect(find.text('Kitchen Sparkle Service'), findsOneWidget);
+
+    tester.view.resetPhysicalSize();
+    tester.view.resetDevicePixelRatio();
+  });
+
+  testWidgets('ElectricalServicesScreen filters services correctly on tap',
+      (WidgetTester tester) async {
+    tester.view.physicalSize = const Size(600, 2000);
+    tester.view.devicePixelRatio = 1.0;
+
+    await tester.pumpWidget(
+      const MaterialApp(
+        home: ElectricalServicesScreen(),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    // Initial state: "All" selected
+    expect(find.text('Wiring & Circuit Repair'), findsOneWidget);
+    expect(find.text('Light Fixture Installation'), findsOneWidget);
+    expect(find.text('Outlet & Switch Upgrade'), findsOneWidget);
+    expect(find.text('EV Charger & Panel Setup'), findsOneWidget);
+    expect(find.text('Appliance Short Circuit Fix'), findsOneWidget);
+
+    // Tap "Top Rated" filter
+    await tester.tap(find.text('Top Rated'));
+    await tester.pumpAndSettle();
+    expect(find.text('Wiring & Circuit Repair'), findsOneWidget);
+    expect(find.text('EV Charger & Panel Setup'), findsOneWidget);
+    expect(find.text('Appliance Short Circuit Fix'), findsOneWidget);
+    expect(find.text('Outlet & Switch Upgrade'), findsNothing);
+
+    // Tap "Emergency" filter
+    await tester.tap(find.text('Emergency'));
+    await tester.pumpAndSettle();
+    expect(find.text('Wiring & Circuit Repair'), findsOneWidget);
+    expect(find.text('Outlet & Switch Upgrade'), findsOneWidget);
+    expect(find.text('Appliance Short Circuit Fix'), findsOneWidget);
+    expect(find.text('Light Fixture Installation'), findsNothing);
+
+    // Tap "Under ₹999" filter
+    await tester.tap(find.text('Under ₹999'));
+    await tester.pumpAndSettle();
+    expect(find.text('Outlet & Switch Upgrade'), findsOneWidget);
+    expect(find.text('Appliance Short Circuit Fix'), findsOneWidget);
+    expect(find.text('Light Fixture Installation'), findsOneWidget);
+    expect(find.text('Wiring & Circuit Repair'), findsOneWidget);
+    expect(find.text('EV Charger & Panel Setup'), findsNothing);
+
+    // Tap "All" to restore
+    await tester.tap(find.text('All'));
+    await tester.pumpAndSettle();
+    expect(find.text('EV Charger & Panel Setup'), findsOneWidget);
+
+    tester.view.resetPhysicalSize();
+    tester.view.resetDevicePixelRatio();
+  });
+
+  testWidgets('PaintingServicesScreen filters services correctly on tap',
+      (WidgetTester tester) async {
+    tester.view.physicalSize = const Size(600, 2000);
+    tester.view.devicePixelRatio = 1.0;
+
+    await tester.pumpWidget(
+      const MaterialApp(
+        home: PaintingServicesScreen(),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    // Initial state: "All"
+    expect(find.text('Interior Room Painting'), findsOneWidget);
+    expect(find.text('Exterior Wall Coating'), findsOneWidget);
+    expect(find.text('Accent Wall Design'), findsOneWidget);
+    expect(find.text('Cabinet & Wood Polishing'), findsOneWidget);
+    expect(find.text('Weatherproof Terrace Paint'), findsOneWidget);
+
+    // Tap "Interior"
+    await tester.tap(find.text('Interior'));
+    await tester.pumpAndSettle();
+    expect(find.text('Interior Room Painting'), findsOneWidget);
+    expect(find.text('Accent Wall Design'), findsOneWidget);
+    expect(find.text('Cabinet & Wood Polishing'), findsOneWidget);
+    expect(find.text('Exterior Wall Coating'), findsNothing);
+    expect(find.text('Weatherproof Terrace Paint'), findsNothing);
+
+    // Tap "Exterior"
+    await tester.tap(find.text('Exterior'));
+    await tester.pumpAndSettle();
+    expect(find.text('Exterior Wall Coating'), findsOneWidget);
+    expect(find.text('Weatherproof Terrace Paint'), findsOneWidget);
+    expect(find.text('Interior Room Painting'), findsNothing);
+
+    // Tap "Top Rated"
+    await tester.tap(find.text('Top Rated'));
+    await tester.pumpAndSettle();
+    expect(find.text('Interior Room Painting'), findsOneWidget);
+    expect(find.text('Accent Wall Design'), findsOneWidget);
+    expect(find.text('Weatherproof Terrace Paint'), findsOneWidget);
+    expect(find.text('Cabinet & Wood Polishing'), findsNothing);
+
+    // Tap "All"
+    await tester.tap(find.text('All'));
+    await tester.pumpAndSettle();
+    expect(find.text('Exterior Wall Coating'), findsOneWidget);
+    expect(find.text('Cabinet & Wood Polishing'), findsOneWidget);
+
+    tester.view.resetPhysicalSize();
+    tester.view.resetDevicePixelRatio();
+  });
+
+  testWidgets('ApplianceServicesScreen filters services correctly on tap',
+      (WidgetTester tester) async {
+    tester.view.physicalSize = const Size(600, 2000);
+    tester.view.devicePixelRatio = 1.0;
+
+    await tester.pumpWidget(
+      const MaterialApp(
+        home: ApplianceServicesScreen(),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    // Initial state: "All"
+    expect(find.text('Refrigerator & Freezer Repair'), findsOneWidget);
+    expect(find.text('Washing Machine & Dryer Care'), findsOneWidget);
+    expect(find.text('Oven & Stove Servicing'), findsOneWidget);
+    expect(find.text('Dishwasher Repair & Clean'), findsOneWidget);
+    expect(find.text('AC Maintenance & Gas Refill'), findsOneWidget);
+
+    // Tap "Top Rated"
+    await tester.tap(find.text('Top Rated'));
+    await tester.pumpAndSettle();
+    expect(find.text('Refrigerator & Freezer Repair'), findsOneWidget);
+    expect(find.text('Dishwasher Repair & Clean'), findsOneWidget);
+    expect(find.text('AC Maintenance & Gas Refill'), findsOneWidget);
+    expect(find.text('Oven & Stove Servicing'), findsNothing);
+
+    // Tap "Same Day"
+    await tester.tap(find.text('Same Day'));
+    await tester.pumpAndSettle();
+    expect(find.text('Refrigerator & Freezer Repair'), findsOneWidget);
+    expect(find.text('Washing Machine & Dryer Care'), findsOneWidget);
+    expect(find.text('AC Maintenance & Gas Refill'), findsOneWidget);
+    expect(find.text('Oven & Stove Servicing'), findsNothing);
+
+    // Tap "Under ₹999"
+    await tester.tap(find.text('Under ₹999'));
+    await tester.pumpAndSettle();
+    expect(find.text('Oven & Stove Servicing'), findsOneWidget);
+    expect(find.text('Washing Machine & Dryer Care'), findsOneWidget);
+    expect(find.text('Dishwasher Repair & Clean'), findsOneWidget);
+    expect(find.text('AC Maintenance & Gas Refill'), findsOneWidget);
+    expect(find.text('Refrigerator & Freezer Repair'), findsOneWidget);
+
+    // Tap "All"
+    await tester.tap(find.text('All'));
+    await tester.pumpAndSettle();
+    expect(find.text('Refrigerator & Freezer Repair'), findsOneWidget);
+    expect(find.text('Oven & Stove Servicing'), findsOneWidget);
 
     tester.view.resetPhysicalSize();
     tester.view.resetDevicePixelRatio();
