@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../../core/services/auth_service.dart';
 import '../../../core/services/booking_service.dart';
+import '../../../core/services/datetime_service.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_typography.dart';
 import '../../../core/widgets/floating_nav_bar.dart';
@@ -13,6 +14,8 @@ import '../../services/screens/cleaning_services_screen.dart';
 import '../../services/screens/electrical_services_screen.dart';
 import '../../services/screens/painting_services_screen.dart';
 import '../../services/screens/service_detail_sheet.dart';
+import '../../profile/screens/payment_methods_screen.dart';
+import '../../profile/screens/saved_addresses_screen.dart';
 import 'notifications_sheet.dart';
 
 class HomeScreen extends StatefulWidget {
@@ -25,12 +28,12 @@ class HomeScreen extends StatefulWidget {
 class _FaqItemData {
   final String question;
   final String answer;
-  bool isExpanded = false;
+  bool isExpanded;
 
   _FaqItemData({
     required this.question,
     required this.answer,
-  });
+  }) : isExpanded = false;
 }
 
 class _HomeScreenState extends State<HomeScreen> {
@@ -39,48 +42,59 @@ class _HomeScreenState extends State<HomeScreen> {
   final TextEditingController _searchController = TextEditingController();
   String _searchQuery = "";
 
-  List<NotificationItemData> _notifications = [
-    NotificationItemData(
-      id: "1",
-      title: "50% Off Special Discount!",
-      message:
-          "Enjoy 50% off on your first carpet deep cleaning booking today.",
-      time: "10m ago",
-      icon: Icons.local_offer_rounded,
-      iconColor: Colors.amber,
-      isRead: false,
-    ),
-    NotificationItemData(
-      id: "2",
-      title: "Booking Confirmed",
-      message:
-          "Your Premium Home Cleaning is scheduled for tomorrow at 10:00 AM.",
-      icon: Icons.check_circle_rounded,
-      iconColor: AppColors.primary,
-      time: "1h ago",
-      isRead: false,
-    ),
-    NotificationItemData(
-      id: "3",
-      title: "New Appliance Specialist Nearby",
-      message:
-          "Verified appliance repair experts are now available in your area.",
-      icon: Icons.home_repair_service_rounded,
-      iconColor: Colors.blueAccent,
-      time: "3h ago",
-      isRead: true,
-    ),
-    NotificationItemData(
-      id: "4",
-      title: "Welcome to Plenora!",
-      message:
-          "Explore top-rated home cleaning, electrical, painting, and appliance services.",
-      icon: Icons.auto_awesome_rounded,
-      iconColor: Colors.purpleAccent,
-      time: "1d ago",
-      isRead: true,
-    ),
-  ];
+  late List<NotificationItemData> _notifications;
+
+  @override
+  void initState() {
+    super.initState();
+    _initNotifications();
+  }
+
+  void _initNotifications() {
+    final now = DateTime.now();
+    _notifications = [
+      NotificationItemData(
+        id: "1",
+        title: "50% Off Special Discount!",
+        message:
+            "Enjoy 50% off on your first carpet deep cleaning booking today.",
+        timestamp: now.subtract(const Duration(minutes: 10)),
+        icon: Icons.local_offer_rounded,
+        iconColor: Colors.amber,
+        isRead: false,
+      ),
+      NotificationItemData(
+        id: "2",
+        title: "Booking Confirmed",
+        message:
+            "Your Premium Home Cleaning is scheduled for ${AppDateTimeUtils.getTomorrowScheduleFormatted()}.",
+        timestamp: now.subtract(const Duration(hours: 1)),
+        icon: Icons.check_circle_rounded,
+        iconColor: AppColors.primary,
+        isRead: false,
+      ),
+      NotificationItemData(
+        id: "3",
+        title: "New Appliance Specialist Nearby",
+        message:
+            "Verified appliance repair experts are now available in your area.",
+        timestamp: now.subtract(const Duration(hours: 3)),
+        icon: Icons.home_repair_service_rounded,
+        iconColor: Colors.blueAccent,
+        isRead: true,
+      ),
+      NotificationItemData(
+        id: "4",
+        title: "Welcome to Plenora!",
+        message:
+            "Explore top-rated home cleaning, electrical, painting, and appliance services.",
+        timestamp: now.subtract(const Duration(days: 1)),
+        icon: Icons.auto_awesome_rounded,
+        iconColor: Colors.purpleAccent,
+        isRead: true,
+      ),
+    ];
+  }
 
   final List<CategoryItem> _categories = const [
     CategoryItem(
@@ -1046,6 +1060,45 @@ class _HomeScreenState extends State<HomeScreen> {
                           ),
                         ],
                       ),
+                      if (item.address != null) ...[
+                        const SizedBox(height: 5),
+                        Row(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            const Icon(Icons.location_on_outlined,
+                                size: 15, color: AppColors.primary),
+                            const SizedBox(width: 6),
+                            Expanded(
+                              child: Text(
+                                item.address!,
+                                style: AppTypography.bodySmall.copyWith(
+                                  color: AppColors.textSecondary,
+                                  fontSize: 12.5,
+                                  height: 1.35,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ],
+                      if (item.paymentMethod != null) ...[
+                        const SizedBox(height: 5),
+                        Row(
+                          children: [
+                            const Icon(Icons.payment_rounded,
+                                size: 15, color: AppColors.primary),
+                            const SizedBox(width: 6),
+                            Text(
+                              item.paymentMethod!,
+                              style: AppTypography.bodySmall.copyWith(
+                                color: AppColors.primary,
+                                fontWeight: FontWeight.w700,
+                                fontSize: 12,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ],
                       if (isConfirmed) ...[
                         const Padding(
                           padding: EdgeInsets.symmetric(vertical: 12),
@@ -1981,9 +2034,11 @@ class _HomeScreenState extends State<HomeScreen> {
                 icon: Icons.location_on_outlined,
                 title: "Saved Addresses",
                 subtitle: "Manage home & office service locations",
-                onTap: () => _showInfoDialog(
-                  "Saved Addresses",
-                  "1. Home Address: 124 Green Park, Block B, New Delhi\n2. Office Address: Tower 4, Cyber City, Sector 24",
+                onTap: () => Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => const SavedAddressesScreen(),
+                  ),
                 ),
               ),
               const Divider(height: 1, indent: 38),
@@ -1992,9 +2047,11 @@ class _HomeScreenState extends State<HomeScreen> {
                 icon: Icons.payment_outlined,
                 title: "Payment Methods",
                 subtitle: "Manage saved cards & payment options",
-                onTap: () => _showInfoDialog(
-                  "Payment Methods",
-                  "1. Cash After Service (Default)\n2. UPI / GPay / PhonePe\n3. Credit / Debit Cards",
+                onTap: () => Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => const PaymentMethodsScreen(),
+                  ),
                 ),
               ),
             ],
@@ -2068,7 +2125,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 assetIcon: "assets/icons/about-icon.png",
                 icon: Icons.info_outline_rounded,
                 title: "About Plenora",
-                subtitle: "Version 1.2.4 (Build 2026)",
+                subtitle: "Version 1.2.4 (Build ${AppDateTimeUtils.getCurrentYearString()})",
                 onTap: () => _showInfoDialog(
                   "About Plenora",
                   "Plenora Cleaning & Home Services v1.2.4\nDesigned for premium, hassle-free home care.",

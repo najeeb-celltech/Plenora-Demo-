@@ -3,6 +3,7 @@ import '../../../core/services/cart_service.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_typography.dart';
 import '../../../core/widgets/primary_button.dart';
+import '../../../core/widgets/schedule_dialog.dart';
 import 'checkout_screen.dart';
 
 class ServiceCartScreen extends StatefulWidget {
@@ -18,13 +19,24 @@ class _ServiceCartScreenState extends State<ServiceCartScreen> {
   ShapeBorder get roundedShape =>
       RoundedRectangleBorder(borderRadius: BorderRadius.circular(12));
 
-  void _checkout(BuildContext context) {
-    Navigator.push(
+  void _proceedToBooking(BuildContext context) async {
+    final schedule = await showScheduleAppointmentDialog(
       context,
-      MaterialPageRoute(
-        builder: (context) => const CheckoutScreen(),
-      ),
+      title: "Schedule Appointment",
+      buttonText: "Continue to Checkout",
     );
+
+    if (schedule != null && context.mounted) {
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (context) => CheckoutScreen(
+            selectedDate: schedule['date'],
+            selectedTime: schedule['time'],
+          ),
+        ),
+      );
+    }
   }
 
   Widget _buildImageWidget(String imageUrl) {
@@ -328,12 +340,15 @@ class _ServiceCartScreenState extends State<ServiceCartScreen> {
                                     color: AppColors.primary,
                                   ),
                                   const SizedBox(width: 4),
-                                  Text(
-                                    "Approx. 2-3 Hours",
-                                    style: AppTypography.bodySmall.copyWith(
-                                      color: AppColors.primary,
-                                      fontWeight: FontWeight.w700,
-                                      fontSize: 11.5,
+                                  Flexible(
+                                    child: Text(
+                                      "Approx. 2-3 Hours",
+                                      style: AppTypography.bodySmall.copyWith(
+                                        color: AppColors.primary,
+                                        fontWeight: FontWeight.w700,
+                                        fontSize: 11.5,
+                                      ),
+                                      overflow: TextOverflow.ellipsis,
                                     ),
                                   ),
                                 ],
@@ -493,8 +508,8 @@ class _ServiceCartScreenState extends State<ServiceCartScreen> {
                 width: double.infinity,
                 child: PrimaryButton(
                   text:
-                      "Proceed to Booking (${CartService.formatInr(total)})",
-                  onPressed: () => _checkout(context),
+                      "Proceed to Bookings (${CartService.formatInr(total)})",
+                  onPressed: () => _proceedToBooking(context),
                   height: 52,
                   borderRadius: 26,
                   leadingIcon: Icons.calendar_month_rounded,

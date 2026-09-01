@@ -3,6 +3,7 @@ import '../../../core/services/cart_service.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_typography.dart';
 import '../../../core/widgets/primary_button.dart';
+import '../../../core/widgets/schedule_dialog.dart';
 import '../../cart/screens/checkout_screen.dart';
 
 class ServiceDetailSheet extends StatefulWidget {
@@ -26,220 +27,37 @@ class ServiceDetailSheet extends StatefulWidget {
 }
 
 class _ServiceDetailSheetState extends State<ServiceDetailSheet> {
-  final List<String> _dates = [
-    "Today, Aug 19",
-    "Tomorrow, Aug 20",
-    "Thu, Aug 21"
-  ];
-  final List<String> _times = [
-    "09:00 AM",
-    "11:30 AM",
-    "02:00 PM",
-    "04:30 PM"
-  ];
-
-  void _confirmBooking() {
-    int tempDateIndex = 0;
-    int tempTimeIndex = 0;
-
-    showDialog(
-      context: context,
-      builder: (dialogContext) {
-        return StatefulBuilder(
-          builder: (context, setModalState) {
-            final selectedDate = _dates[tempDateIndex];
-            final selectedTime = _times[tempTimeIndex];
-
-            return AlertDialog(
-              shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(24)),
-              backgroundColor: AppColors.surface,
-              contentPadding: const EdgeInsets.all(20),
-              content: SingleChildScrollView(
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    // Header Row with Title and Close Button
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Text(
-                          "Schedule Appointment",
-                          style: AppTypography.titleLarge.copyWith(
-                            fontSize: 18,
-                            fontWeight: FontWeight.w700,
-                          ),
-                        ),
-                        GestureDetector(
-                          onTap: () => Navigator.pop(dialogContext),
-                          child: Container(
-                            width: 32,
-                            height: 32,
-                            decoration: const BoxDecoration(
-                              color: AppColors.background,
-                              shape: BoxShape.circle,
-                            ),
-                            child: const Icon(
-                              Icons.close_rounded,
-                              size: 18,
-                              color: AppColors.textSecondary,
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 16),
-
-                    // Service Date Label & Selection Chips
-                    Text(
-                      "Service Date",
-                      style: AppTypography.titleMedium.copyWith(
-                        fontSize: 14,
-                        fontWeight: FontWeight.w700,
-                      ),
-                    ),
-                    const SizedBox(height: 8),
-                    SingleChildScrollView(
-                      scrollDirection: Axis.horizontal,
-                      physics: const BouncingScrollPhysics(),
-                      child: Row(
-                        children: List.generate(_dates.length, (index) {
-                          final isSelected = tempDateIndex == index;
-                          return GestureDetector(
-                            onTap: () =>
-                                setModalState(() => tempDateIndex = index),
-                            child: AnimatedContainer(
-                              duration: const Duration(milliseconds: 180),
-                              margin: const EdgeInsets.only(right: 8),
-                              padding: const EdgeInsets.symmetric(
-                                  horizontal: 14, vertical: 8),
-                              decoration: BoxDecoration(
-                                color: isSelected
-                                    ? AppColors.primary
-                                    : AppColors.background,
-                                borderRadius: BorderRadius.circular(14),
-                                border: Border.all(
-                                  color: isSelected
-                                      ? AppColors.primary
-                                      : Colors.grey.shade300,
-                                ),
-                              ),
-                              child: Text(
-                                _dates[index],
-                                style: AppTypography.bodySmall.copyWith(
-                                  color: isSelected
-                                      ? Colors.white
-                                      : AppColors.textPrimary,
-                                  fontWeight: isSelected
-                                      ? FontWeight.w700
-                                      : FontWeight.w600,
-                                  fontSize: 12,
-                                ),
-                              ),
-                            ),
-                          );
-                        }),
-                      ),
-                    ),
-
-                    const SizedBox(height: 16),
-
-                    // Service Time Label & Selection Chips
-                    Text(
-                      "Service Time",
-                      style: AppTypography.titleMedium.copyWith(
-                        fontSize: 14,
-                        fontWeight: FontWeight.w700,
-                      ),
-                    ),
-                    const SizedBox(height: 8),
-                    Wrap(
-                      spacing: 8,
-                      runSpacing: 8,
-                      children: List.generate(_times.length, (index) {
-                        final isSelected = tempTimeIndex == index;
-                        return GestureDetector(
-                          onTap: () =>
-                              setModalState(() => tempTimeIndex = index),
-                          child: AnimatedContainer(
-                            duration: const Duration(milliseconds: 180),
-                            padding: const EdgeInsets.symmetric(
-                                horizontal: 14, vertical: 8),
-                            decoration: BoxDecoration(
-                              color: isSelected
-                                  ? AppColors.primary
-                                  : AppColors.background,
-                              borderRadius: BorderRadius.circular(14),
-                              border: Border.all(
-                                color: isSelected
-                                    ? AppColors.primary
-                                    : Colors.grey.shade300,
-                              ),
-                            ),
-                            child: Text(
-                              _times[index],
-                              style: AppTypography.bodySmall.copyWith(
-                                color: isSelected
-                                    ? Colors.white
-                                    : AppColors.textPrimary,
-                                fontWeight: isSelected
-                                    ? FontWeight.w700
-                                    : FontWeight.w600,
-                                fontSize: 12,
-                              ),
-                            ),
-                          ),
-                        );
-                      }),
-                    ),
-
-                    const SizedBox(height: 22),
-
-                    // Confirm & Continue Button
-                    SizedBox(
-                      width: double.infinity,
-                      child: PrimaryButton(
-                        text: "Confirm & Continue",
-                        onPressed: () {
-                          final directItem = CartItem(
-                            title: widget.title,
-                            description: widget.description,
-                            price: widget.price,
-                            priceNumeric: CartService.parsePrice(widget.price),
-                            rating: widget.rating,
-                            imageUrl: widget.imageUrl,
-                            category: "Service",
-                          );
-
-                          // Close dialog and detail bottom sheet
-                          final nav = Navigator.of(context);
-                          Navigator.pop(dialogContext); // Close dialog
-                          nav.pop(); // Close bottom sheet
-
-                          nav.push(
-                            MaterialPageRoute(
-                              builder: (context) => CheckoutScreen(
-                                directItem: directItem,
-                                selectedDate: selectedDate,
-                                selectedTime: selectedTime,
-                              ),
-                            ),
-                          );
-                        },
-                        height: 46,
-                        borderRadius: 23,
-                        leadingIcon: Icons.arrow_forward_rounded,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            );
-          },
-        );
-      },
+  void _confirmBooking() async {
+    final schedule = await showScheduleAppointmentDialog(
+      context,
+      title: "Schedule Appointment",
+      buttonText: "Confirm & Continue",
     );
+
+    if (schedule != null && mounted) {
+      final directItem = CartItem(
+        title: widget.title,
+        description: widget.description,
+        price: widget.price,
+        priceNumeric: CartService.parsePrice(widget.price),
+        rating: widget.rating,
+        imageUrl: widget.imageUrl,
+        category: "Service",
+      );
+
+      final nav = Navigator.of(context);
+      nav.pop(); // Close bottom sheet
+
+      nav.push(
+        MaterialPageRoute(
+          builder: (context) => CheckoutScreen(
+            directItem: directItem,
+            selectedDate: schedule['date'],
+            selectedTime: schedule['time'],
+          ),
+        ),
+      );
+    }
   }
 
   void _addToCart() {
@@ -473,8 +291,13 @@ class _ServiceDetailSheetState extends State<ServiceDetailSheet> {
                               Text(widget.rating.toStringAsFixed(1),
                                   style: AppTypography.ratingText),
                               const SizedBox(width: 8),
-                              Text("• 120+ Completed Bookings",
-                                  style: AppTypography.bodySmall),
+                              Flexible(
+                                child: Text(
+                                  "• 120+ Completed Bookings",
+                                  style: AppTypography.bodySmall,
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                              ),
                             ],
                           ),
 

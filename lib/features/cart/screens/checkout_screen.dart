@@ -1,9 +1,15 @@
 import 'package:flutter/material.dart';
+import '../../../core/services/address_service.dart';
 import '../../../core/services/booking_service.dart';
 import '../../../core/services/cart_service.dart';
+import '../../../core/services/datetime_service.dart';
+import '../../../core/services/payment_service.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_typography.dart';
 import '../../../core/widgets/primary_button.dart';
+import '../../../core/widgets/schedule_dialog.dart';
+import '../../profile/screens/payment_methods_screen.dart';
+import '../../profile/screens/saved_addresses_screen.dart';
 
 class CheckoutScreen extends StatefulWidget {
   final CartItem? directItem;
@@ -22,9 +28,37 @@ class CheckoutScreen extends StatefulWidget {
 }
 
 class _CheckoutScreenState extends State<CheckoutScreen> {
-  int _selectedAddressIndex = 0;
-  int _selectedPaymentIndex = 0;
+  String? _selectedAddressId;
+  String _selectedPaymentKey = "card_card_1";
   final TextEditingController _couponController = TextEditingController();
+  late String _selectedDate;
+  late String _selectedTime;
+
+  @override
+  void initState() {
+    super.initState();
+    _selectedDate =
+        widget.selectedDate ?? AppDateTimeUtils.getDefaultBookingDate();
+    _selectedTime =
+        widget.selectedTime ?? AppDateTimeUtils.getDefaultBookingTime();
+
+    final defAddress = AddressService.defaultAddress;
+    if (defAddress != null) {
+      _selectedAddressId = defAddress.id;
+    } else if (AddressService.addressesNotifier.value.isNotEmpty) {
+      _selectedAddressId = AddressService.addressesNotifier.value.first.id;
+    }
+
+    final defCard = PaymentMethodService.defaultCard;
+    if (defCard != null) {
+      _selectedPaymentKey = "card_${defCard.id}";
+    } else if (PaymentMethodService.cardsNotifier.value.isNotEmpty) {
+      _selectedPaymentKey =
+          "card_${PaymentMethodService.cardsNotifier.value.first.id}";
+    } else {
+      _selectedPaymentKey = "cash";
+    }
+  }
 
   @override
   void dispose() {
@@ -44,52 +78,48 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
           content: Text("Coupon '${code.toUpperCase()}' applied successfully!"),
           backgroundColor: AppColors.primary,
           behavior: SnackBarBehavior.floating,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+          shape:
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
           duration: const Duration(seconds: 2),
         ),
       );
     }
   }
 
-  final List<Map<String, String>> _addresses = [
-    {
-      "type": "Home Address",
-      "address": "124 Green Park, Block B, New Delhi",
-      "assetIcon": "assets/icons/addresses-icon.png",
-      "fallbackIcon": "home",
-    },
-    {
-      "type": "Office Address",
-      "address": "Tower 4, Cyber City, Sector 24",
-      "assetIcon": "assets/icons/office_address-icon.png",
-      "fallbackIcon": "work",
-    },
-  ];
-
-  final List<Map<String, dynamic>> _paymentMethods = [
-    {
-      "title": "Cash After Service",
-      "subtitle": "Pay cash or UPI directly to technician after job completion.",
-      "assetIcon": "assets/icons/cash_after_service-icon.png",
-      "fallbackIcon": Icons.payments_rounded,
-    },
-    {
-      "title": "UPI / GPay / PhonePe",
-      "subtitle": "Instant & secure payment via any UPI app.",
-      "assetIcon": "assets/icons/upi-icon.png",
-      "fallbackIcon": Icons.account_balance_wallet_rounded,
-    },
-    {
-      "title": "Credit / Debit Card",
-      "subtitle": "Visa, Mastercard, RuPay & Amex supported.",
-      "assetIcon": "assets/icons/cards-icon.png",
-      "fallbackIcon": Icons.credit_card_rounded,
-    },
-  ];
-
   double _parsePrice(String priceStr) {
     final cleaned = priceStr.replaceAll(RegExp(r'[^\d.]'), '');
     return double.tryParse(cleaned) ?? 0.0;
+  }
+
+  String _getSelectedAddressString() {
+    final addresses = AddressService.addressesNotifier.value;
+    if (addresses.isEmpty) {
+      return "124 Green Park, Block B, New Delhi";
+    }
+    final selected = addresses.firstWhere(
+      (a) => a.id == _selectedAddressId,
+      orElse: () => addresses.first,
+    );
+    return selected.formattedFullAddress;
+  }
+
+  String _getSelectedPaymentMethodString() {
+    if (_selectedPaymentKey.startsWith("card_")) {
+      final cardId = _selectedPaymentKey.replaceFirst("card_", "");
+      final cards = PaymentMethodService.cardsNotifier.value;
+      if (cards.isNotEmpty) {
+        final card = cards.firstWhere(
+          (c) => c.id == cardId,
+          orElse: () => cards.first,
+        );
+        return card.maskedNumber;
+      }
+      return "Visa •••• 4521";
+    } else if (_selectedPaymentKey == "upi") {
+      return "UPI / GPay / PhonePe";
+    } else {
+      return "Cash After Service";
+    }
   }
 
   void _confirmAndPay() {
@@ -108,11 +138,12 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
     final discount = CartService.discountNotifier.value;
     final total = (subtotal - discount).clamp(0.0, double.infinity);
 
-    final selectedAddress = _addresses[_selectedAddressIndex]["address"]!;
-    final bookingDate = widget.selectedDate ?? "Today, Aug 19";
-    final bookingTime = widget.selectedTime ?? "10:00 AM";
+    final selectedAddressString = _getSelectedAddressString();
+    final selectedPaymentMethodString = _getSelectedPaymentMethodString();
+    final bookingDate = _selectedDate;
+    final bookingTime = _selectedTime;
 
-    // Record all confirmed bookings in BookingService
+    // Record all confirmed bookings in BookingService with address and payment method
     for (var item in items) {
       BookingService.addBooking(
         title: item.title,
@@ -121,6 +152,8 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
         time: bookingTime,
         imageUrl: item.imageUrl,
         status: "CONFIRMED",
+        address: selectedAddressString,
+        paymentMethod: selectedPaymentMethodString,
       );
     }
 
@@ -160,7 +193,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
             ),
             const SizedBox(height: 8),
             Text(
-              "Your service has been confirmed for $selectedAddress ($bookingDate at $bookingTime). Total amount: ${CartService.formatInr(total)}.",
+              "Your service has been confirmed for $selectedAddressString ($bookingDate at $bookingTime) via $selectedPaymentMethodString. Total amount: ${CartService.formatInr(total)}.",
               style: AppTypography.bodyMedium.copyWith(
                 color: AppColors.textSecondary,
                 height: 1.4,
@@ -212,8 +245,8 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
 
   Widget _buildRadioCircle(bool isSelected) {
     return Container(
-      width: 22,
-      height: 22,
+      width: 20,
+      height: 20,
       decoration: BoxDecoration(
         shape: BoxShape.circle,
         border: Border.all(
@@ -224,8 +257,8 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
       child: isSelected
           ? Center(
               child: Container(
-                width: 12,
-                height: 12,
+                width: 10,
+                height: 10,
                 decoration: const BoxDecoration(
                   color: AppColors.primary,
                   shape: BoxShape.circle,
@@ -271,14 +304,13 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
           ),
           body: Stack(
             children: [
-              // Scrollable Main Content (Generous 150dp bottom padding for unclipped Booking Summary)
               SingleChildScrollView(
                 physics: const BouncingScrollPhysics(),
                 padding: const EdgeInsets.fromLTRB(20, 10, 20, 150),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    // Section 1: Clean & Compact Service Summary Box
+                    // Section 1: Service Summary Box
                     Text(
                       "Service Summary",
                       style: AppTypography.titleLarge.copyWith(fontSize: 17),
@@ -308,7 +340,6 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                             child: Row(
                               crossAxisAlignment: CrossAxisAlignment.center,
                               children: [
-                                // Thumbnail (72x72 scaled 1.25x edge-to-edge)
                                 ClipRRect(
                                   borderRadius: BorderRadius.circular(16),
                                   child: Container(
@@ -376,182 +407,581 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
 
                     const SizedBox(height: 24),
 
-                    // Section 2: Service Address Selection
-                    Text(
-                      "Service Address",
-                      style: AppTypography.titleLarge.copyWith(fontSize: 17),
+                    // Section 2: Saved Service Address Selection
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Expanded(
+                          child: Text(
+                            "Service Address",
+                            style: AppTypography.titleLarge.copyWith(fontSize: 17),
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ),
+                        const SizedBox(width: 8),
+                        GestureDetector(
+                          onTap: () async {
+                            final selected = await Navigator.push<UserAddress>(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) => SavedAddressesScreen(
+                                  selectMode: true,
+                                  selectedAddressId: _selectedAddressId,
+                                ),
+                              ),
+                            );
+                            if (selected != null) {
+                              setState(() => _selectedAddressId = selected.id);
+                            }
+                          },
+                          child: Row(
+                            children: [
+                              const Icon(Icons.add_location_alt_outlined,
+                                  size: 15, color: AppColors.primary),
+                              const SizedBox(width: 4),
+                              Text(
+                                "Manage / Add",
+                                style: AppTypography.bodySmall.copyWith(
+                                  color: AppColors.primary,
+                                  fontWeight: FontWeight.w700,
+                                  fontSize: 12.5,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
                     ),
                     const SizedBox(height: 12),
-                    Column(
-                      children: List.generate(_addresses.length, (index) {
-                        final addr = _addresses[index];
-                        final isSelected = _selectedAddressIndex == index;
 
-                        return GestureDetector(
-                          onTap: () =>
-                              setState(() => _selectedAddressIndex = index),
-                          child: Container(
-                            margin: const EdgeInsets.only(bottom: 10),
-                            padding: const EdgeInsets.all(16),
-                            decoration: BoxDecoration(
-                              color: AppColors.surface,
-                              borderRadius: BorderRadius.circular(18),
-                              border: Border.all(
-                                color: isSelected
-                                    ? AppColors.primary
-                                    : Colors.transparent,
-                                width: 1.8,
+                    ValueListenableBuilder<List<UserAddress>>(
+                      valueListenable: AddressService.addressesNotifier,
+                      builder: (context, addresses, _) {
+                        if (addresses.isEmpty) {
+                          return GestureDetector(
+                            onTap: () => Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) =>
+                                    const SavedAddressesScreen(),
                               ),
-                              boxShadow: const [
-                                BoxShadow(
-                                  color: Color(0x0A000000),
-                                  blurRadius: 8,
-                                  offset: Offset(0, 2),
-                                ),
-                              ],
                             ),
-                            child: Row(
-                              children: [
-                                Image.asset(
-                                  addr["assetIcon"]!,
-                                  width: 22,
-                                  height: 22,
-                                  color: isSelected
-                                      ? AppColors.primary
-                                      : AppColors.textSecondary,
-                                  errorBuilder: (context, error, stackTrace) =>
-                                      Icon(
-                                    addr["fallbackIcon"] == "home"
-                                        ? Icons.home_rounded
-                                        : Icons.work_rounded,
+                            child: Container(
+                              padding: const EdgeInsets.all(16),
+                              decoration: BoxDecoration(
+                                color: AppColors.surface,
+                                borderRadius: BorderRadius.circular(18),
+                                border: Border.all(color: Colors.grey.shade200),
+                              ),
+                              child: Row(
+                                children: [
+                                  const Icon(Icons.add_location_rounded,
+                                      color: AppColors.primary, size: 24),
+                                  const SizedBox(width: 12),
+                                  Expanded(
+                                    child: Text(
+                                      "Add a delivery address",
+                                      style: AppTypography.titleMedium.copyWith(
+                                        color: AppColors.primary,
+                                        fontWeight: FontWeight.w700,
+                                      ),
+                                    ),
+                                  ),
+                                  const Icon(Icons.arrow_forward_ios_rounded,
+                                      size: 14, color: AppColors.textSecondary),
+                                ],
+                              ),
+                            ),
+                          );
+                        }
+
+                        return Column(
+                          children: List.generate(addresses.length, (index) {
+                            final addr = addresses[index];
+                            final isSelected = _selectedAddressId == addr.id ||
+                                (_selectedAddressId == null && index == 0);
+
+                            return GestureDetector(
+                              onTap: () =>
+                                  setState(() => _selectedAddressId = addr.id),
+                              child: Container(
+                                margin: const EdgeInsets.only(bottom: 10),
+                                padding: const EdgeInsets.all(16),
+                                decoration: BoxDecoration(
+                                  color: AppColors.surface,
+                                  borderRadius: BorderRadius.circular(18),
+                                  border: Border.all(
                                     color: isSelected
                                         ? AppColors.primary
-                                        : AppColors.textSecondary,
-                                    size: 22,
+                                        : Colors.transparent,
+                                    width: 1.8,
                                   ),
+                                  boxShadow: const [
+                                    BoxShadow(
+                                      color: Color(0x0A000000),
+                                      blurRadius: 8,
+                                      offset: Offset(0, 2),
+                                    ),
+                                  ],
                                 ),
-                                const SizedBox(width: 12),
-                                Expanded(
-                                  child: Column(
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.start,
-                                    children: [
-                                      Text(
-                                        addr["type"]!,
-                                        style:
-                                            AppTypography.titleMedium.copyWith(
-                                          fontSize: 14.5,
-                                          fontWeight: FontWeight.w700,
+                                child: Row(
+                                  children: [
+                                    Container(
+                                      padding: const EdgeInsets.all(8),
+                                      decoration: BoxDecoration(
+                                        color: isSelected
+                                            ? AppColors.primaryLight
+                                            : AppColors.background,
+                                        shape: BoxShape.circle,
+                                      ),
+                                      child: Image.asset(
+                                        addr.type == AddressType.office
+                                            ? "assets/icons/office_address-icon.png"
+                                            : "assets/icons/addresses-icon.png",
+                                        width: 20,
+                                        height: 20,
+                                        color: isSelected
+                                            ? AppColors.primary
+                                            : AppColors.textSecondary,
+                                        errorBuilder:
+                                            (context, error, stackTrace) =>
+                                                Icon(
+                                          addr.type == AddressType.home
+                                              ? Icons.home_rounded
+                                              : addr.type == AddressType.office
+                                                  ? Icons.business_rounded
+                                                  : Icons.location_on_rounded,
+                                          color: isSelected
+                                              ? AppColors.primary
+                                              : AppColors.textSecondary,
+                                          size: 20,
                                         ),
                                       ),
-                                      const SizedBox(height: 2),
-                                      Text(
-                                        addr["address"]!,
-                                        style: AppTypography.bodySmall.copyWith(
-                                          color: AppColors.textSecondary,
-                                        ),
+                                    ),
+                                    const SizedBox(width: 12),
+                                    Expanded(
+                                      child: Column(
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.start,
+                                        children: [
+                                          Row(
+                                            children: [
+                                              Flexible(
+                                                child: Text(
+                                                  addr.typeDisplay,
+                                                  style: AppTypography.titleMedium
+                                                      .copyWith(
+                                                    fontSize: 14.5,
+                                                    fontWeight: FontWeight.w700,
+                                                  ),
+                                                  overflow: TextOverflow.ellipsis,
+                                                ),
+                                              ),
+                                              if (addr.isDefault) ...[
+                                                const SizedBox(width: 6),
+                                                Container(
+                                                  padding:
+                                                      const EdgeInsets.symmetric(
+                                                          horizontal: 6,
+                                                          vertical: 2),
+                                                  decoration: BoxDecoration(
+                                                    color: AppColors.primaryLight,
+                                                    borderRadius:
+                                                        BorderRadius.circular(4),
+                                                  ),
+                                                  child: Text(
+                                                    "Default",
+                                                    style: AppTypography
+                                                        .bodySmall
+                                                        .copyWith(
+                                                      color: AppColors.primary,
+                                                      fontSize: 10,
+                                                      fontWeight:
+                                                          FontWeight.w700,
+                                                    ),
+                                                  ),
+                                                ),
+                                              ],
+                                            ],
+                                          ),
+                                          const SizedBox(height: 2),
+                                          Text(
+                                            addr.formattedShortAddress,
+                                            style: AppTypography.bodySmall
+                                                .copyWith(
+                                              color: AppColors.textSecondary,
+                                              fontSize: 12,
+                                            ),
+                                          ),
+                                        ],
                                       ),
-                                    ],
-                                  ),
+                                    ),
+                                    _buildRadioCircle(isSelected),
+                                  ],
                                 ),
-                                _buildRadioCircle(isSelected),
-                              ],
-                            ),
-                          ),
+                              ),
+                            );
+                          }),
                         );
-                      }),
+                      },
                     ),
 
                     const SizedBox(height: 20),
 
-                    // Section 3: Payment Options Selection
-                    Text(
-                      "Payment Options",
-                      style: AppTypography.titleLarge.copyWith(fontSize: 17),
+                    // Section 3: Payment Options (Saved Cards + UPI + Cash)
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Expanded(
+                          child: Text(
+                            "Payment Options",
+                            style: AppTypography.titleLarge.copyWith(fontSize: 17),
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ),
+                        const SizedBox(width: 8),
+                        GestureDetector(
+                          onTap: () async {
+                            final card = await Navigator.push<PaymentCard>(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) =>
+                                    const PaymentMethodsScreen(selectMode: true),
+                              ),
+                            );
+                            if (card != null) {
+                              setState(
+                                  () => _selectedPaymentKey = "card_${card.id}");
+                            }
+                          },
+                          child: Row(
+                            children: [
+                              const Icon(Icons.add_card_rounded,
+                                  size: 15, color: AppColors.primary),
+                              const SizedBox(width: 4),
+                              Text(
+                                "Add Card",
+                                style: AppTypography.bodySmall.copyWith(
+                                  color: AppColors.primary,
+                                  fontWeight: FontWeight.w700,
+                                  fontSize: 12.5,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
                     ),
                     const SizedBox(height: 12),
-                    Column(
-                      children: List.generate(_paymentMethods.length, (index) {
-                        final method = _paymentMethods[index];
-                        final isSelected = _selectedPaymentIndex == index;
 
-                        return GestureDetector(
-                          onTap: () =>
-                              setState(() => _selectedPaymentIndex = index),
-                          child: Container(
-                            margin: const EdgeInsets.only(bottom: 10),
-                            padding: const EdgeInsets.all(16),
-                            decoration: BoxDecoration(
-                              color: AppColors.surface,
-                              borderRadius: BorderRadius.circular(18),
-                              border: Border.all(
-                                color: isSelected
-                                    ? AppColors.primary
-                                    : Colors.transparent,
-                                width: 1.8,
-                              ),
-                              boxShadow: const [
-                                BoxShadow(
-                                  color: Color(0x0A000000),
-                                  blurRadius: 8,
-                                  offset: Offset(0, 2),
-                                ),
-                              ],
-                            ),
-                            child: Row(
-                              children: [
-                                Image.asset(
-                                  method["assetIcon"] as String,
-                                  width: 22,
-                                  height: 22,
-                                  color: isSelected
-                                      ? AppColors.primary
-                                      : AppColors.textSecondary,
-                                  errorBuilder: (context, error, stackTrace) =>
-                                      Icon(
-                                    method["fallbackIcon"] as IconData,
-                                    color: isSelected
-                                        ? AppColors.primary
-                                        : AppColors.textSecondary,
-                                    size: 22,
-                                  ),
-                                ),
-                                const SizedBox(width: 12),
-                                Expanded(
-                                  child: Column(
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.start,
-                                    children: [
-                                      Text(
-                                        method["title"] as String,
-                                        style:
-                                            AppTypography.titleMedium.copyWith(
-                                          fontSize: 14.5,
-                                          fontWeight: FontWeight.w700,
-                                        ),
-                                      ),
-                                      const SizedBox(height: 2),
-                                      Text(
-                                        method["subtitle"] as String,
-                                        style: AppTypography.bodySmall.copyWith(
-                                          color: AppColors.textSecondary,
-                                          fontSize: 11.5,
-                                        ),
+                    // Saved Cards list
+                    ValueListenableBuilder<List<PaymentCard>>(
+                      valueListenable: PaymentMethodService.cardsNotifier,
+                      builder: (context, cards, _) {
+                        return Column(
+                          children: [
+                            ...cards.map((card) {
+                              final isSelected =
+                                  _selectedPaymentKey == "card_${card.id}";
+                              return GestureDetector(
+                                onTap: () => setState(() =>
+                                    _selectedPaymentKey = "card_${card.id}"),
+                                child: Container(
+                                  margin: const EdgeInsets.only(bottom: 10),
+                                  padding: const EdgeInsets.all(16),
+                                  decoration: BoxDecoration(
+                                    color: AppColors.surface,
+                                    borderRadius: BorderRadius.circular(18),
+                                    border: Border.all(
+                                      color: isSelected
+                                          ? AppColors.primary
+                                          : Colors.transparent,
+                                      width: 1.8,
+                                    ),
+                                    boxShadow: const [
+                                      BoxShadow(
+                                        color: Color(0x0A000000),
+                                        blurRadius: 8,
+                                        offset: Offset(0, 2),
                                       ),
                                     ],
                                   ),
+                                  child: Row(
+                                    children: [
+                                      Container(
+                                        padding: const EdgeInsets.all(8),
+                                        decoration: BoxDecoration(
+                                          color: isSelected
+                                              ? AppColors.primaryLight
+                                              : AppColors.background,
+                                          shape: BoxShape.circle,
+                                        ),
+                                        child: Image.asset(
+                                          "assets/icons/cards-icon.png",
+                                          width: 20,
+                                          height: 20,
+                                          color: isSelected
+                                              ? AppColors.primary
+                                              : AppColors.textSecondary,
+                                          errorBuilder:
+                                              (context, error, stackTrace) =>
+                                                  Icon(
+                                            Icons.credit_card_rounded,
+                                            color: isSelected
+                                                ? AppColors.primary
+                                                : AppColors.textSecondary,
+                                            size: 20,
+                                          ),
+                                        ),
+                                      ),
+                                      const SizedBox(width: 12),
+                                      Expanded(
+                                        child: Column(
+                                          crossAxisAlignment:
+                                              CrossAxisAlignment.start,
+                                          children: [
+                                            Row(
+                                              children: [
+                                                Flexible(
+                                                  child: Text(
+                                                    card.maskedNumber,
+                                                    style: AppTypography
+                                                        .titleMedium
+                                                        .copyWith(
+                                                      fontSize: 14.5,
+                                                      fontWeight:
+                                                          FontWeight.w700,
+                                                    ),
+                                                    overflow:
+                                                        TextOverflow.ellipsis,
+                                                  ),
+                                                ),
+                                                if (card.isDefault) ...[
+                                                  const SizedBox(width: 6),
+                                                  Container(
+                                                    padding:
+                                                        const EdgeInsets.symmetric(
+                                                            horizontal: 6,
+                                                            vertical: 2),
+                                                    decoration: BoxDecoration(
+                                                      color:
+                                                          AppColors.primaryLight,
+                                                      borderRadius:
+                                                          BorderRadius.circular(
+                                                              4),
+                                                    ),
+                                                    child: Text(
+                                                      "Default",
+                                                      style: AppTypography
+                                                          .bodySmall
+                                                          .copyWith(
+                                                        color:
+                                                            AppColors.primary,
+                                                        fontSize: 10,
+                                                        fontWeight:
+                                                            FontWeight.w700,
+                                                      ),
+                                                    ),
+                                                  ),
+                                                ],
+                                              ],
+                                            ),
+                                            const SizedBox(height: 2),
+                                            Text(
+                                              "${card.typeDisplay} • Expires ${card.expiryDisplay}",
+                                              style: AppTypography.bodySmall
+                                                  .copyWith(
+                                                color: AppColors.textSecondary,
+                                                fontSize: 11.5,
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                      ),
+                                      _buildRadioCircle(isSelected),
+                                    ],
+                                  ),
                                 ),
-                                _buildRadioCircle(isSelected),
-                              ],
+                              );
+                            }),
+
+                            // UPI Option
+                            GestureDetector(
+                              onTap: () =>
+                                  setState(() => _selectedPaymentKey = "upi"),
+                              child: Container(
+                                margin: const EdgeInsets.only(bottom: 10),
+                                padding: const EdgeInsets.all(16),
+                                decoration: BoxDecoration(
+                                  color: AppColors.surface,
+                                  borderRadius: BorderRadius.circular(18),
+                                  border: Border.all(
+                                    color: _selectedPaymentKey == "upi"
+                                        ? AppColors.primary
+                                        : Colors.transparent,
+                                    width: 1.8,
+                                  ),
+                                  boxShadow: const [
+                                    BoxShadow(
+                                      color: Color(0x0A000000),
+                                      blurRadius: 8,
+                                      offset: Offset(0, 2),
+                                    ),
+                                  ],
+                                ),
+                                child: Row(
+                                  children: [
+                                    Container(
+                                      padding: const EdgeInsets.all(8),
+                                      decoration: BoxDecoration(
+                                        color: _selectedPaymentKey == "upi"
+                                            ? AppColors.primaryLight
+                                            : AppColors.background,
+                                        shape: BoxShape.circle,
+                                      ),
+                                      child: Image.asset(
+                                        "assets/icons/upi-icon.png",
+                                        width: 20,
+                                        height: 20,
+                                        color: _selectedPaymentKey == "upi"
+                                            ? AppColors.primary
+                                            : AppColors.textSecondary,
+                                        errorBuilder:
+                                            (context, error, stackTrace) =>
+                                                Icon(
+                                          Icons.account_balance_wallet_rounded,
+                                          color: _selectedPaymentKey == "upi"
+                                              ? AppColors.primary
+                                              : AppColors.textSecondary,
+                                          size: 20,
+                                        ),
+                                      ),
+                                    ),
+                                    const SizedBox(width: 12),
+                                    Expanded(
+                                      child: Column(
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.start,
+                                        children: [
+                                          Text(
+                                            "UPI / GPay / PhonePe",
+                                            style: AppTypography.titleMedium
+                                                .copyWith(
+                                              fontSize: 14.5,
+                                              fontWeight: FontWeight.w700,
+                                            ),
+                                          ),
+                                          const SizedBox(height: 2),
+                                          Text(
+                                            "Instant & secure payment via any UPI app.",
+                                            style: AppTypography.bodySmall
+                                                .copyWith(
+                                              color: AppColors.textSecondary,
+                                              fontSize: 11.5,
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                    _buildRadioCircle(
+                                        _selectedPaymentKey == "upi"),
+                                  ],
+                                ),
+                              ),
                             ),
-                          ),
+
+                            // Cash After Service Option
+                            GestureDetector(
+                              onTap: () =>
+                                  setState(() => _selectedPaymentKey = "cash"),
+                              child: Container(
+                                margin: const EdgeInsets.only(bottom: 10),
+                                padding: const EdgeInsets.all(16),
+                                decoration: BoxDecoration(
+                                  color: AppColors.surface,
+                                  borderRadius: BorderRadius.circular(18),
+                                  border: Border.all(
+                                    color: _selectedPaymentKey == "cash"
+                                        ? AppColors.primary
+                                        : Colors.transparent,
+                                    width: 1.8,
+                                  ),
+                                  boxShadow: const [
+                                    BoxShadow(
+                                      color: Color(0x0A000000),
+                                      blurRadius: 8,
+                                      offset: Offset(0, 2),
+                                    ),
+                                  ],
+                                ),
+                                child: Row(
+                                  children: [
+                                    Container(
+                                      padding: const EdgeInsets.all(8),
+                                      decoration: BoxDecoration(
+                                        color: _selectedPaymentKey == "cash"
+                                            ? AppColors.primaryLight
+                                            : AppColors.background,
+                                        shape: BoxShape.circle,
+                                      ),
+                                      child: Image.asset(
+                                        "assets/icons/cash_after_service-icon.png",
+                                        width: 20,
+                                        height: 20,
+                                        color: _selectedPaymentKey == "cash"
+                                            ? AppColors.primary
+                                            : AppColors.textSecondary,
+                                        errorBuilder:
+                                            (context, error, stackTrace) =>
+                                                Icon(
+                                          Icons.payments_rounded,
+                                          color: _selectedPaymentKey == "cash"
+                                              ? AppColors.primary
+                                              : AppColors.textSecondary,
+                                          size: 20,
+                                        ),
+                                      ),
+                                    ),
+                                    const SizedBox(width: 12),
+                                    Expanded(
+                                      child: Column(
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.start,
+                                        children: [
+                                          Text(
+                                            "Cash After Service",
+                                            style: AppTypography.titleMedium
+                                                .copyWith(
+                                              fontSize: 14.5,
+                                              fontWeight: FontWeight.w700,
+                                            ),
+                                          ),
+                                          const SizedBox(height: 2),
+                                          Text(
+                                            "Pay cash or UPI directly to technician after job completion.",
+                                            style: AppTypography.bodySmall
+                                                .copyWith(
+                                              color: AppColors.textSecondary,
+                                              fontSize: 11.5,
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                    _buildRadioCircle(
+                                        _selectedPaymentKey == "cash"),
+                                  ],
+                                ),
+                              ),
+                            ),
+                          ],
                         );
-                      }),
+                      },
                     ),
 
                     const SizedBox(height: 20),
 
-                    // Section 4: Booking Cost Summary with Applied Promo Discount
+                    // Section 4: Booking Summary
                     ValueListenableBuilder<double>(
                       valueListenable: CartService.discountNotifier,
                       builder: (context, discount, child) {
@@ -651,18 +1081,91 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                               ),
                               const SizedBox(height: 16),
 
+                              GestureDetector(
+                                onTap: () async {
+                                  final schedule =
+                                      await showScheduleAppointmentDialog(
+                                    context,
+                                    title: "Reschedule Appointment",
+                                    buttonText: "Update Date & Time",
+                                    initialDate: _selectedDate,
+                                    initialTime: _selectedTime,
+                                  );
+                                  if (schedule != null) {
+                                    setState(() {
+                                      _selectedDate = schedule['date']!;
+                                      _selectedTime = schedule['time']!;
+                                    });
+                                  }
+                                },
+                                behavior: HitTestBehavior.opaque,
+                                child: Row(
+                                  mainAxisAlignment:
+                                      MainAxisAlignment.spaceBetween,
+                                  children: [
+                                    Expanded(
+                                      child: Text(
+                                        "Scheduled Date & Time",
+                                        style: AppTypography.bodyMedium,
+                                      ),
+                                    ),
+                                    const SizedBox(width: 8),
+                                    Flexible(
+                                      child: Text(
+                                        "$_selectedDate • $_selectedTime",
+                                        style: AppTypography.bodyMedium.copyWith(
+                                          color: AppColors.primary,
+                                          fontWeight: FontWeight.w700,
+                                          fontSize: 12.5,
+                                        ),
+                                        overflow: TextOverflow.ellipsis,
+                                        textAlign: TextAlign.end,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                              const SizedBox(height: 8),
                               Row(
                                 mainAxisAlignment:
                                     MainAxisAlignment.spaceBetween,
                                 children: [
-                                  Text(
-                                    "Scheduled Date & Time",
-                                    style: AppTypography.bodyMedium,
+                                  Expanded(
+                                    child: Text(
+                                      "Selected Address",
+                                      style: AppTypography.bodyMedium,
+                                    ),
                                   ),
                                   const SizedBox(width: 8),
                                   Flexible(
                                     child: Text(
-                                      "${widget.selectedDate ?? 'Today, Aug 19'} • ${widget.selectedTime ?? '10:00 AM'}",
+                                      _getSelectedAddressString(),
+                                      style: AppTypography.bodyMedium.copyWith(
+                                        color: AppColors.textPrimary,
+                                        fontWeight: FontWeight.w700,
+                                        fontSize: 12,
+                                      ),
+                                      overflow: TextOverflow.ellipsis,
+                                      textAlign: TextAlign.end,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                              const SizedBox(height: 8),
+                              Row(
+                                mainAxisAlignment:
+                                    MainAxisAlignment.spaceBetween,
+                                children: [
+                                  Expanded(
+                                    child: Text(
+                                      "Payment Method",
+                                      style: AppTypography.bodyMedium,
+                                    ),
+                                  ),
+                                  const SizedBox(width: 8),
+                                  Flexible(
+                                    child: Text(
+                                      _getSelectedPaymentMethodString(),
                                       style: AppTypography.bodyMedium.copyWith(
                                         color: AppColors.primary,
                                         fontWeight: FontWeight.w700,

@@ -6,7 +6,10 @@ import 'core/theme/app_theme.dart';
 import 'features/home/screens/home_screen.dart';
 import 'features/onboarding/screens/onboarding_screen.dart';
 
-void main() {
+import 'core/services/address_service.dart';
+import 'core/services/payment_service.dart';
+
+void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
   // Transparent status bar with dark icons
@@ -16,6 +19,9 @@ void main() {
       statusBarIconBrightness: Brightness.dark,
     ),
   );
+
+  await AddressService.init();
+  await PaymentMethodService.init();
 
   runApp(const PlenoraApp());
 }

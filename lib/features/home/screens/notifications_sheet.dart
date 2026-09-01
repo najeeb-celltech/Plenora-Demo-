@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../../core/services/datetime_service.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_typography.dart';
 
@@ -7,6 +8,7 @@ class NotificationItemData {
   final String title;
   final String message;
   final String time;
+  final DateTime? timestamp;
   final IconData icon;
   final Color iconColor;
   bool isRead;
@@ -15,11 +17,19 @@ class NotificationItemData {
     required this.id,
     required this.title,
     required this.message,
-    required this.time,
+    this.time = "",
+    this.timestamp,
     required this.icon,
     required this.iconColor,
     this.isRead = false,
   });
+
+  String get displayTime {
+    if (timestamp != null) {
+      return AppDateTimeUtils.formatRelativeTime(timestamp!);
+    }
+    return time;
+  }
 }
 
 class NotificationsSheet extends StatefulWidget {
@@ -210,7 +220,7 @@ class _NotificationsSheetState extends State<NotificationsSheet> {
                                   ),
                                   const SizedBox(width: 8),
                                   Text(
-                                    item.time,
+                                    item.displayTime,
                                     style: AppTypography.bodySmall.copyWith(
                                       color: AppColors.textMuted,
                                       fontSize: 11,

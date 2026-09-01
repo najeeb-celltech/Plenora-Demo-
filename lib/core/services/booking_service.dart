@@ -8,6 +8,8 @@ class BookedService {
   final String time;
   final String imageUrl;
   final String status;
+  final String? address;
+  final String? paymentMethod;
   final DateTime bookedAt;
 
   BookedService({
@@ -18,6 +20,8 @@ class BookedService {
     required this.time,
     required this.imageUrl,
     this.status = "CONFIRMED",
+    this.address,
+    this.paymentMethod,
     required this.bookedAt,
   });
 }
@@ -33,6 +37,8 @@ class BookingService {
     required String time,
     required String imageUrl,
     String status = "CONFIRMED",
+    String? address,
+    String? paymentMethod,
   }) {
     final currentBookings = List<BookedService>.from(bookingsNotifier.value);
     currentBookings.insert(
@@ -45,6 +51,8 @@ class BookingService {
         time: time,
         imageUrl: imageUrl,
         status: status,
+        address: address,
+        paymentMethod: paymentMethod,
         bookedAt: DateTime.now(),
       ),
     );
@@ -64,6 +72,8 @@ class BookingService {
         time: old.time,
         imageUrl: old.imageUrl,
         status: "CANCELLED",
+        address: old.address,
+        paymentMethod: old.paymentMethod,
         bookedAt: old.bookedAt,
       );
       bookingsNotifier.value = currentBookings;
