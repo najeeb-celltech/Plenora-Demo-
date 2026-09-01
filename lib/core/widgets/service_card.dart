@@ -245,14 +245,19 @@ class ServiceCard extends StatelessWidget {
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        Text(
-                          price,
-                          style: AppTypography.titleLarge.copyWith(
-                            color: AppColors.primary,
-                            fontSize: 15.5,
-                            fontWeight: FontWeight.w800,
+                        Flexible(
+                          child: Text(
+                            price,
+                            style: AppTypography.titleLarge.copyWith(
+                              color: AppColors.primary,
+                              fontSize: 15.5,
+                              fontWeight: FontWeight.w800,
+                            ),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
                           ),
                         ),
+                        const SizedBox(width: 6),
                         Container(
                           padding: const EdgeInsets.symmetric(
                             horizontal: 8,

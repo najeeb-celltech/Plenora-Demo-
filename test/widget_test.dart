@@ -17,6 +17,7 @@ import 'package:plenora/features/services/screens/cleaning_services_screen.dart'
 import 'package:plenora/features/services/screens/electrical_services_screen.dart';
 import 'package:plenora/features/services/screens/painting_services_screen.dart';
 import 'package:plenora/features/services/screens/appliance_services_screen.dart';
+import 'package:plenora/features/services/screens/popular_services_screen.dart';
 import 'package:plenora/features/services/screens/service_detail_sheet.dart';
 import 'package:plenora/main.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -906,5 +907,139 @@ void main() {
     expect(decodedCard.cardType, CardType.credit);
     expect(decodedCard.last4Digits, "1234");
     expect(decodedCard.isDefault, true);
+  });
+
+  testWidgets('Home -> Popular Services -> View All navigates to PopularServicesScreen and DOES NOT delete account',
+      (WidgetTester tester) async {
+    tester.view.physicalSize = const Size(375, 812);
+    tester.view.devicePixelRatio = 1.0;
+
+    await tester.pumpWidget(
+      const MaterialApp(
+        home: HomeScreen(),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    // Verify Popular services section is present
+    expect(find.text('Popular services'), findsOneWidget);
+    expect(find.text('View All'), findsOneWidget);
+
+    // Tap "View All"
+    await tester.tap(find.text('View All'));
+    await tester.pumpAndSettle();
+
+    // Must navigate to PopularServicesScreen
+    expect(find.byType(PopularServicesScreen), findsOneWidget);
+    expect(find.text('Popular Services'), findsWidgets);
+    expect(find.text('All'), findsWidgets);
+    expect(find.text('Top Rated'), findsWidgets);
+    expect(find.text('Under ₹999'), findsWidgets);
+    expect(find.text('Carpet Cleaning'), findsOneWidget);
+
+    // Must NOT have triggered account deletion or login screen
+    expect(find.text('Account has been permanently deleted.'), findsNothing);
+    expect(find.byType(LoginScreen), findsNothing);
+
+    tester.view.resetPhysicalSize();
+    tester.view.resetDevicePixelRatio();
+  });
+
+  testWidgets('PopularServicesScreen filters popular services correctly on tap',
+      (WidgetTester tester) async {
+    tester.view.physicalSize = const Size(600, 2000);
+    tester.view.devicePixelRatio = 1.0;
+
+    await tester.pumpWidget(
+      const MaterialApp(
+        home: PopularServicesScreen(),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    // Initial state: "All"
+    expect(find.text('Carpet Cleaning'), findsOneWidget);
+    expect(find.text('Kitchen Sparkle Service'), findsOneWidget);
+    expect(find.text('Wiring & Short-Circuit Fix'), findsOneWidget);
+
+    // Tap "Top Rated"
+    await tester.tap(find.text('Top Rated'));
+    await tester.pumpAndSettle();
+    expect(find.text('Full House Deep Sanitation'), findsOneWidget);
+    expect(find.text('Carpet Cleaning'), findsOneWidget);
+    expect(find.text('Kitchen Sparkle Service'), findsNothing);
+
+    // Tap "Under ₹999"
+    await tester.tap(find.text('Under ₹999'));
+    await tester.pumpAndSettle();
+    expect(find.text('Carpet Cleaning'), findsOneWidget);
+    expect(find.text('Kitchen Sparkle Service'), findsOneWidget);
+    expect(find.text('Full House Deep Sanitation'), findsNothing);
+
+    // Tap "All"
+    await tester.tap(find.text('All'));
+    await tester.pumpAndSettle();
+    expect(find.text('Carpet Cleaning'), findsOneWidget);
+    expect(find.text('Full House Deep Sanitation'), findsOneWidget);
+
+    tester.view.resetPhysicalSize();
+    tester.view.resetDevicePixelRatio();
+  });
+
+  testWidgets('PopularServicesScreen allows Add to Service and View Details',
+      (WidgetTester tester) async {
+    tester.view.physicalSize = const Size(375, 812);
+    tester.view.devicePixelRatio = 1.0;
+
+    CartService.clearCart();
+
+    await tester.pumpWidget(
+      const MaterialApp(
+        home: PopularServicesScreen(),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    // Tap "Add to Service" on first card
+    expect(find.text('Add to Service'), findsWidgets);
+    await tester.tap(find.text('Add to Service').first);
+    await tester.pumpAndSettle();
+
+    // Verify item was added to CartService
+    expect(CartService.itemsNotifier.value.length, 1);
+    expect(CartService.itemsNotifier.value.first.title, "Carpet Cleaning");
+
+    // Tap "View Details"
+    expect(find.text('View Details'), findsWidgets);
+    await tester.tap(find.text('View Details').first);
+    await tester.pumpAndSettle();
+
+    // Verify ServiceDetailSheet opened
+    expect(find.text('Schedule Now'), findsOneWidget);
+    expect(find.text('• 120+ Completed Bookings'), findsOneWidget);
+
+    tester.view.resetPhysicalSize();
+    tester.view.resetDevicePixelRatio();
+  });
+
+  testWidgets('PopularServicesScreen renders cleanly on small 320px screen without any overflow',
+      (WidgetTester tester) async {
+    tester.view.physicalSize = const Size(320, 568);
+    tester.view.devicePixelRatio = 1.0;
+
+    await tester.pumpWidget(
+      const MaterialApp(
+        home: PopularServicesScreen(),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    // Verify all header and filter elements render without throwing RenderFlex errors
+    expect(find.byType(PopularServicesScreen), findsOneWidget);
+    expect(find.text('Popular Services'), findsWidgets);
+    expect(find.text('All'), findsWidgets);
+
+    tester.view.resetPhysicalSize();
+    tester.view.resetDevicePixelRatio();
   });
 }

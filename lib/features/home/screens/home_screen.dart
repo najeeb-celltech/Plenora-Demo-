@@ -13,6 +13,7 @@ import '../../services/screens/appliance_services_screen.dart';
 import '../../services/screens/cleaning_services_screen.dart';
 import '../../services/screens/electrical_services_screen.dart';
 import '../../services/screens/painting_services_screen.dart';
+import '../../services/screens/popular_services_screen.dart';
 import '../../services/screens/service_detail_sheet.dart';
 import '../../profile/screens/payment_methods_screen.dart';
 import '../../profile/screens/saved_addresses_screen.dart';
@@ -679,27 +680,12 @@ class _HomeScreenState extends State<HomeScreen> {
               ),
               const SizedBox(width: 8),
               GestureDetector(
-                onTap: () async {
-                  final nav = Navigator.of(context);
-                  final messenger = ScaffoldMessenger.of(context);
-                  nav.pop();
-                  await AuthService.logout();
-                  messenger.showSnackBar(
-                    SnackBar(
-                      content:
-                          const Text("Account has been permanently deleted."),
-                      backgroundColor: Colors.redAccent,
-                      behavior: SnackBarBehavior.floating,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                    ),
-                  );
-                  nav.pushAndRemoveUntil(
+                onTap: () {
+                  Navigator.push(
+                    context,
                     MaterialPageRoute(
-                      builder: (context) => const LoginScreen(),
+                      builder: (context) => const PopularServicesScreen(),
                     ),
-                    (route) => false,
                   );
                 },
                 child: Text(
